@@ -1,7 +1,7 @@
 import {
   buildAuthorizationContext,
   authorize,
-} from "../services/authorizationService.js";
+} from "../services/authorizations/authorizationService.js";
 
 export function requirePermission(permission) {
   return async (req, res, next) => {

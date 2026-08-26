@@ -1,4 +1,3 @@
-import { authorize } from "../services/authorizationService.js";
 import {
   getWebsiteAuthorization,
   authorizeWebsiteView,
@@ -6,7 +5,7 @@ import {
   authorizeWebsiteUpdate,
   authorizeWebsiteDisable,
   getAuthorizedWebsiteIds,
-} from "../services/websiteAuthorizationService.js";
+} from "../services/authorizations/websiteAuthorizationService.js";
 
 import {
   getWebsiteById,

@@ -2,7 +2,7 @@ import {
   buildAuthorizationContext,
   authorize,
   hasWebsiteAccess,
-} from "../services/authorizationService.js";
+} from "./authorizationService.js";
 
 export async function getCustomerAuthorization(user) {
   return buildAuthorizationContext(user);

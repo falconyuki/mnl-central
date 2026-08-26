@@ -5,7 +5,7 @@ import {
   authorizeCustomerUpdate,
   authorizeCustomerStatusUpdate,
   getAuthorizedCustomerWebsiteIds,
-} from "../services/customerAuthorizationService.js";
+} from "../services/authorizations/customerAuthorizationService.js";
 import {
   getCustomerById,
   listCustomers,

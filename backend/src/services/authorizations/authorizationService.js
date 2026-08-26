@@ -1,4 +1,4 @@
-import { execute } from "../database/database.js";
+import { execute } from "../../database/database.js";
 
 export async function getUserPermissions(userId) {
   const result = await execute(
