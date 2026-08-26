@@ -135,6 +135,9 @@ export async function updateCampaignParticipationStatus(id, status) {
     return existingParticipation;
   }
 
-  await updateCampaignParticipationStatusRepository(normalizedId, status);
+  await updateCampaignParticipationStatusRepository({
+    id: normalizedId,
+    status,
+  });
   return findCampaignParticipationById(normalizedId);
 }

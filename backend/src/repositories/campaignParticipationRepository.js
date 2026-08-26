@@ -56,7 +56,7 @@ export async function listCampaignParticipations({
       };
     }
     const placeholder = websiteIds.map(() => `?`).join(",");
-    conditions.push(`cp.website_id IN (${placeholder})`);
+    conditions.push(`c.website_id IN (${placeholder})`);
     parameters.push(...websiteIds);
   }
 
