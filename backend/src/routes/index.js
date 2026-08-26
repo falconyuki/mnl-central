@@ -7,6 +7,7 @@ import campaignParticipationRoutes from "./campaignParticipationRoutes.js";
 import promotionRoutes from "./promotionRoutes.js";
 import promotionReceiptRoutes from "./promotionReceiptRoutes.js";
 import callAttemptRoutes from "./callAttemptRoutes.js";
+import campaignDiscussionRoutes from "./campaignDiscussionRoutes.js";
 
 const router = Router();
 
@@ -28,5 +29,6 @@ router.use("/campaign-participations", campaignParticipationRoutes);
 router.use("/promotions", promotionRoutes);
 router.use("/promotion-receipts", promotionReceiptRoutes);
 router.use("/call-attempts", callAttemptRoutes);
+router.use("/campaign-discussions", campaignDiscussionRoutes);
 
 export default router;
