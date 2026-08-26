@@ -1,7 +1,7 @@
 import {
   buildAuthorizationContext,
-  authorize,
   hasWebsiteAccess,
+  authorizeOrThrow,
 } from "./authorizationService.js";
 
 export async function getWebsiteAuthorization(user) {
@@ -9,19 +9,19 @@ export async function getWebsiteAuthorization(user) {
 }
 
 export function authorizeWebsiteView(authorizationContext, websiteId) {
-  return authorize(authorizationContext, "WEBSITE_VIEW", websiteId);
+  return authorizeOrThrow(authorizationContext, "WEBSITE_VIEW", websiteId);
 }
 
 export function authorizeWebsiteCreate(authorizationContext) {
-  return authorize(authorizationContext, "WEBSITE_CREATE");
+  return authorizeOrThrow(authorizationContext, "WEBSITE_CREATE");
 }
 
 export function authorizeWebsiteUpdate(authorizationContext, websiteId) {
-  return authorize(authorizationContext, "WEBSITE_UPDATE", websiteId);
+  return authorizeOrThrow(authorizationContext, "WEBSITE_UPDATE", websiteId);
 }
 
 export function authorizeWebsiteDisable(authorizationContext, websiteId) {
-  return authorize(authorizationContext, "WEBSITE_DISABLE", websiteId);
+  return authorizeOrThrow(authorizationContext, "WEBSITE_DISABLE", websiteId);
 }
 
 export function getAuthorizedWebsiteIds(authorizationContext) {

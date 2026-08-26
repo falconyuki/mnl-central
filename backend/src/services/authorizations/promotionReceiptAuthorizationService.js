@@ -1,7 +1,7 @@
 import {
   buildAuthorizationContext,
-  authorize,
   hasWebsiteAccess,
+  authorizeOrThrow,
 } from "./authorizationService.js";
 
 export async function getPromotionReceiptAuthorization(user) {
@@ -9,14 +9,22 @@ export async function getPromotionReceiptAuthorization(user) {
 }
 
 export function authorizePromotionReceiptView(authorizationContext, websiteId) {
-  return authorize(authorizationContext, "PROMOTION_RECEIPT_VIEW", websiteId);
+  return authorizeOrThrow(
+    authorizationContext,
+    "PROMOTION_RECEIPT_VIEW",
+    websiteId,
+  );
 }
 
 export function authorizePromotionReceiptCreate(
   authorizationContext,
   websiteId,
 ) {
-  return authorize(authorizationContext, "PROMOTION_RECEIPT_CREATE", websiteId);
+  return authorizeOrThrow(
+    authorizationContext,
+    "PROMOTION_RECEIPT_CREATE",
+    websiteId,
+  );
 }
 
 export function getAuthorizedPromotionReceiptWebsiteIds(authorizationContext) {

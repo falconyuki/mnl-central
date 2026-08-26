@@ -1,7 +1,7 @@
 import {
   buildAuthorizationContext,
-  authorize,
   hasWebsiteAccess,
+  authorizeOrThrow,
 } from "./authorizationService.js";
 
 export async function getCustomerAuthorization(user) {
@@ -9,19 +9,23 @@ export async function getCustomerAuthorization(user) {
 }
 
 export function authorizeCustomerView(authorizationContext, websiteId) {
-  return authorize(authorizationContext, "CUSTOMER_VIEW", websiteId);
+  return authorizeOrThrow(authorizationContext, "CUSTOMER_VIEW", websiteId);
 }
 
 export function authorizeCustomerCreate(authorizationContext, websiteId) {
-  return authorize(authorizationContext, "CUSTOMER_CREATE", websiteId);
+  return authorizeOrThrow(authorizationContext, "CUSTOMER_CREATE", websiteId);
 }
 
 export function authorizeCustomerUpdate(authorizationContext, websiteId) {
-  return authorize(authorizationContext, "CUSTOMER_UPDATE", websiteId);
+  return authorizeOrThrow(authorizationContext, "CUSTOMER_UPDATE", websiteId);
 }
 
 export function authorizeCustomerStatusUpdate(authorizationContext, websiteId) {
-  return authorize(authorizationContext, "CUSTOMER_STATUS_UPDATE", websiteId);
+  return authorizeOrThrow(
+    authorizationContext,
+    "CUSTOMER_STATUS_UPDATE",
+    websiteId,
+  );
 }
 
 export function getAuthorizedCustomerWebsiteIds(authorizationContext) {

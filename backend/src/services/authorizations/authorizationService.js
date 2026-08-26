@@ -1,4 +1,5 @@
 import { execute } from "../../database/database.js";
+import { AppError } from "../../errors/AppError.js";
 
 export async function getUserPermissions(userId) {
   const result = await execute(
@@ -82,4 +83,26 @@ export function authorize(authorizationContext, permission, websiteId = null) {
   return {
     allowed: true,
   };
+}
+
+export function authorizeOrThrow(
+  authorizationContext,
+  permission,
+  websiteId = null,
+) {
+  const result = authorize(authorizationContext, permission, websiteId);
+
+  if (!result.allowed) {
+    throw new AppError(
+      result.reason === "UNAUTHORIZED_WEBSITE"
+        ? "Unauthorized website."
+        : "Insufficient permissions.",
+      {
+        code: result.reason,
+        statusCode: 403,
+      },
+    );
+  }
+
+  return result;
 }

@@ -1,7 +1,7 @@
 import {
   buildAuthorizationContext,
-  authorize,
   hasWebsiteAccess,
+  authorizeOrThrow,
 } from "./authorizationService.js";
 
 export async function getPromotionAuthorization(user) {
@@ -9,22 +9,26 @@ export async function getPromotionAuthorization(user) {
 }
 
 export function authorizePromotionView(authorizationContext, websiteId) {
-  return authorize(authorizationContext, "PROMOTION_VIEW", websiteId);
+  return authorizeOrThrow(authorizationContext, "PROMOTION_VIEW", websiteId);
 }
 
 export function authorizePromotionCreate(authorizationContext, websiteId) {
-  return authorize(authorizationContext, "PROMOTION_CREATE", websiteId);
+  return authorizeOrThrow(authorizationContext, "PROMOTION_CREATE", websiteId);
 }
 
 export function authorizePromotionUpdate(authorizationContext, websiteId) {
-  return authorize(authorizationContext, "PROMOTION_UPDATE", websiteId);
+  return authorizeOrThrow(authorizationContext, "PROMOTION_UPDATE", websiteId);
 }
 
 export function authorizePromotionStatusUpdate(
   authorizationContext,
   websiteId,
 ) {
-  return authorize(authorizationContext, "PROMOTION_STATUS_UPDATE", websiteId);
+  return authorizeOrThrow(
+    authorizationContext,
+    "PROMOTION_STATUS_UPDATE",
+    websiteId,
+  );
 }
 
 export function getAuthorizedPromotionWebsiteIds(authorizationContext) {

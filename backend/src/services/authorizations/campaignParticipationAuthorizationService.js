@@ -1,7 +1,7 @@
 import {
   buildAuthorizationContext,
-  authorize,
   hasWebsiteAccess,
+  authorizeOrThrow,
 } from "./authorizationService.js";
 
 export async function getCampaignParticipationAuthorization(user) {
@@ -12,21 +12,29 @@ export function authorizeCampaignParticipationView(
   authorizationContext,
   websiteId,
 ) {
-  return authorize(authorizationContext, "PARTICIPATION_VIEW", websiteId);
+  return authorizeOrThrow(
+    authorizationContext,
+    "PARTICIPATION_VIEW",
+    websiteId,
+  );
 }
 
 export function authorizeCampaignParticipationCreate(
   authorizationContext,
   websiteId,
 ) {
-  return authorize(authorizationContext, "PARTICIPATION_CREATE", websiteId);
+  return authorizeOrThrow(
+    authorizationContext,
+    "PARTICIPATION_CREATE",
+    websiteId,
+  );
 }
 
 export function authorizeCampaignParticipationStatusUpdate(
   authorizationContext,
   websiteId,
 ) {
-  return authorize(
+  return authorizeOrThrow(
     authorizationContext,
     "PARTICIPATION_STATUS_UPDATE",
     websiteId,
