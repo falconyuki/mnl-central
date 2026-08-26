@@ -89,7 +89,7 @@ export async function findUserWebsiteAccess(userId) {
             uwa.website_id,
             w.name AS website_name,
             w.code AS website_code,
-            w.status AS website_status,
+            w.status AS website_status
         FROM user_website_access uwa
         INNER JOIN websites w ON w.id = uwa.website_id
         WHERE uwa.user_id = ?

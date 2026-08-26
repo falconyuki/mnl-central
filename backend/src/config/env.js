@@ -1,4 +1,4 @@
-const requiredEnvironmentVariables = ["DATABASE_URL"];
+const requiredEnvironmentVariables = ["DATABASE_URL", "JWT_SECRET"];
 
 export function validateEnvironment() {
   const missingVariables = requiredEnvironmentVariables.filter(

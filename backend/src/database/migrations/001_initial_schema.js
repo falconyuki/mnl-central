@@ -1,5 +1,3 @@
-import { executeMultiple } from "../database.js";
-
 const statements = [
   // ============================================================
   // Security / Authorization
@@ -349,7 +347,7 @@ export const migration001 = {
   version: 1,
   name: "initial_schema",
 
-  async up() {
-    await executeMultiple(statements);
+  async up(transaction) {
+    await transaction.batch(statements);
   },
 };

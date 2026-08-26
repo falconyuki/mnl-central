@@ -35,7 +35,7 @@ export async function listCampaigns({
     if (websiteIds.length === 0) {
       return {
         rows: [],
-        count: 0,
+        total: 0,
       };
     }
     const placeholder = websiteIds.map(() => `?`).join(",");
@@ -52,13 +52,13 @@ export async function listCampaigns({
   );
 
   const result = await execute(
-    `SELECT id, website_id, name, description, start_date, end_date, status, created_by, created_at, updated_at FROM campaigns ${whereClause} ORDER BY name ASC, created_at ASC LIMIT ? OFFSET ?`,
+    `SELECT id, website_id, name, description, start_date, end_date, status, created_by, created_at, updated_at FROM campaigns ${whereClause} ORDER BY start_date DESC, name ASC LIMIT ? OFFSET ?`,
     [...parameters, pageSize, offset],
   );
 
   return {
     rows: result.rows,
-    count: Number(countResult.rows[0].total),
+    total: Number(countResult.rows[0].total),
   };
 }
 

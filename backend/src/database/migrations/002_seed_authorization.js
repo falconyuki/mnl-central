@@ -1,5 +1,3 @@
-import { executeMultiple } from "../database.js";
-
 const statements = [
   // ============================================================
   // Roles
@@ -120,8 +118,8 @@ export const migration002 = {
   version: 2,
   name: "seed_authorization",
 
-  async up() {
-    await executeMultiple(statements);
+  async up(transaction) {
+    await transaction.batch(statements);
 
     const permissionIds = Array.from(
       { length: 43 },
@@ -241,6 +239,6 @@ export const migration002 = {
       }
     }
 
-    await executeMultiple(rolePermissionStatements);
+    await transaction.batch(rolePermissionStatements);
   },
 };

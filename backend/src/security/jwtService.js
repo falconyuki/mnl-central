@@ -1,12 +1,10 @@
 import jwt from "jsonwebtoken";
+import appConfig from "../config/appConfig.js";
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_ACCESS_TOKEN_EXPIRES_IN =
-  process.env.JWT_ACCESS_TOKEN_EXPIRES_IN || "15m";
-
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET is not set");
-}
+const {
+  secret: JWT_SECRET,
+  accessTokenExpiresIn: JWT_ACCESS_TOKEN_EXPIRES_IN,
+} = appConfig.jwt;
 
 export function signAccessToken(payload) {
   return jwt.sign(payload, JWT_SECRET, {

@@ -9,7 +9,6 @@ import {
 import { findWebsiteById } from "../repositories/websiteRepository.js";
 import { AppError } from "../errors/AppError.js";
 import { ERROR_CODES } from "../errors/errorCodes.js";
-import { CANCELLED } from "node:dns";
 
 const CAMPAIGN_STATUS = {
   DRAFT: "Draft",
@@ -64,7 +63,7 @@ function validateCampaignStatus(status) {
 }
 
 function validateStatusTransition(status, nextStatus) {
-  if (currentStatus === nextStatus) {
+  if (status === nextStatus) {
     return;
   }
 
@@ -81,16 +80,16 @@ function validateStatusTransition(status, nextStatus) {
     [CAMPAIGN_STATUS.CANCELLED]: new Set(),
   };
 
-  if (!allowedTransitions[currentStatus]?.has(nextStatus)) {
+  if (!allowedTransitions[status]?.has(nextStatus)) {
     throw new AppError(
-      `Invalid campaignstatus transition from ${currentStatus} to ${nextStatus}.`,
+      `Invalid campaign status transition from ${status} to ${nextStatus}.`,
       {
         code: ERROR_CODES.BUSINESS_RULE_VIOLATION,
         statusCode: 400,
         details: {
           resource: "Campaign",
           field: "status",
-          currentStatus,
+          currentStatus: status,
           nextStatus,
         },
       },

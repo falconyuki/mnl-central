@@ -9,7 +9,7 @@ export async function executeMultiple(statements) {
 }
 
 export async function withTransaction(callback) {
-  const transaction = await beginTransaction("write");
+  const transaction = await db.transaction("write");
   try {
     const result = await callback(transaction);
     await transaction.commit();
