@@ -3,7 +3,9 @@ import authRoutes from "./authRoutes.js";
 import websiteRoutes from "./websiteRoutes.js";
 import customerRoutes from "./customerRoutes.js";
 import campaignRoutes from "./campaignRoutes.js";
+import campaignParticipationRoutes from "./campaignParticipationRoutes.js";
 import promotionRoutes from "./promotionRoutes.js";
+import promotionReceiptRoutes from "./promotionReceiptRoutes.js";
 
 const router = Router();
 
@@ -21,6 +23,8 @@ router.use("/auth", authRoutes);
 router.use("/websites", websiteRoutes);
 router.use("/customers", customerRoutes);
 router.use("/campaigns", campaignRoutes);
+router.use("/campaign-participations", campaignParticipationRoutes);
 router.use("/promotions", promotionRoutes);
+router.use("/promotion-receipts", promotionReceiptRoutes);
 
 export default router;
