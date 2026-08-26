@@ -165,7 +165,7 @@ export async function updatePromotionStatus(id, status) {
     });
   }
 
-  if (existinePromotion.status === status) {
+  if (existingPromotion.status === status) {
     return existingPromotion;
   }
 
