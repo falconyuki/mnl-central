@@ -12,6 +12,7 @@ import {
 } from "../services/promotionReceiptService.js";
 
 import { getPromotionById } from "../services/promotionService.js";
+import { getCampaignById } from "../services/campaignService.js";
 
 export async function getPromotionReceipts(req, res, next) {
   try {
@@ -58,11 +59,21 @@ export async function postPromotionReceipt(req, res, next) {
       });
     }
 
+    const campaign = await getCampaignById(promotion.campaignId);
+    if (!campaign) {
+      return res.status(404).json({
+        error: {
+          code: "NOT_FOUND",
+          message: "Campaign not found",
+        },
+      });
+    }
+
     const authorizationContext = await getPromotionReceiptAuthorization(
       req.user,
     );
 
-    authorizePromotionReceiptCreate(authorizationContext, promotion.websiteId);
+    authorizePromotionReceiptCreate(authorizationContext, campaign.websiteId);
 
     const receipt = await createPromotionReceipt({
       promotionId: req.body.promotionId,
@@ -82,7 +93,6 @@ export async function postPromotionReceipt(req, res, next) {
 export async function getPromotionReceipt(req, res, next) {
   try {
     const receipt = await getPromotionReceiptById(req.params.id);
-
     if (!receipt) {
       return res.status(404).json({
         error: {
@@ -93,7 +103,6 @@ export async function getPromotionReceipt(req, res, next) {
     }
 
     const promotion = await getPromotionById(receipt.promotionId);
-
     if (!promotion) {
       return res.status(404).json({
         error: {
@@ -102,12 +111,21 @@ export async function getPromotionReceipt(req, res, next) {
         },
       });
     }
+    const campaign = await getCampaignById(promotion.campaignId);
+    if (!campaign) {
+      return res.status(404).json({
+        error: {
+          code: "NOT_FOUND",
+          message: "Campaign not found",
+        },
+      });
+    }
 
     const authorizationContext = await getPromotionReceiptAuthorization(
       req.user,
     );
 
-    authorizePromotionReceiptView(authorizationContext, promotion.websiteId);
+    authorizePromotionReceiptView(authorizationContext, campaign.websiteId);
 
     return res.status(200).json({
       data: receipt,
