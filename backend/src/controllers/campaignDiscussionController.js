@@ -1,15 +1,15 @@
 import {
-  getCampaignDiscussionById,
-  listCampaignDiscussions,
-  createCampaignDiscussion,
-} from "../services/campaignDiscussionService.js";
-
-import {
   getCampaignDiscussionAuthorization,
   authorizeCampaignDiscussionView,
   authorizeCampaignDiscussionCreate,
   getAuthorizedCampaignDiscussionWebsiteIds,
 } from "../services/authorizations/campaignDiscussionAuthorizationService.js";
+
+import {
+  getCampaignDiscussionById,
+  listCampaignDiscussions,
+  createCampaignDiscussion,
+} from "../services/campaignDiscussionService.js";
 
 import { findCallAttemptById } from "../repositories/callAttemptRepository.js";
 import { findCustomerById } from "../repositories/customerRepository.js";
@@ -18,7 +18,12 @@ import { findCampaignById } from "../repositories/campaignRepository.js";
 
 export async function getCampaignDiscussions(req, res, next) {
   try {
-    const websiteIds = getAuthorizedCampaignDiscussionWebsiteIds(req.user);
+    const authorizationContext = await getCampaignDiscussionAuthorization(
+      req.user,
+    );
+
+    const websiteIds =
+      getAuthorizedCampaignDiscussionWebsiteIds(authorizationContext);
 
     const result = await listCampaignDiscussions({
       page: req.query.page ?? 1,
@@ -44,12 +49,9 @@ export async function getCampaignDiscussions(req, res, next) {
 
 export async function getCampaignDiscussion(req, res, next) {
   try {
-    const authorizationContext = await getCampaignDiscussionAuthorization(
-      req.user,
-      req.params.id,
-    );
+    const discussion = await getCampaignDiscussionById(req.params.id);
 
-    if (authorizationContext.reason === "NOT_FOUND") {
+    if (!discussion) {
       return res.status(404).json({
         error: {
           code: "NOT_FOUND",
@@ -58,9 +60,33 @@ export async function getCampaignDiscussion(req, res, next) {
       });
     }
 
-    authorizeCampaignDiscussionView(authorizationContext);
+    const callAttempt = await findCallAttemptById(discussion.callAttemptId);
 
-    const discussion = await getCampaignDiscussionById(req.params.id);
+    if (!callAttempt) {
+      return res.status(404).json({
+        error: {
+          code: "NOT_FOUND",
+          message: "Call attempt not found",
+        },
+      });
+    }
+
+    const customer = await findCustomerById(callAttempt.customerId);
+
+    if (!customer) {
+      return res.status(404).json({
+        error: {
+          code: "NOT_FOUND",
+          message: "Customer not found",
+        },
+      });
+    }
+
+    const authorizationContext = await getCampaignDiscussionAuthorization(
+      req.user,
+    );
+
+    authorizeCampaignDiscussionView(authorizationContext, customer.websiteId);
 
     return res.status(200).json({
       data: discussion,
@@ -107,7 +133,7 @@ export async function postCampaignDiscussion(req, res, next) {
       });
     }
 
-    const campaign = await findCampaignById(participation.campaign_id);
+    const campaign = await findCampaignById(participation.campaignId);
 
     if (!campaign) {
       return res.status(404).json({
@@ -118,7 +144,11 @@ export async function postCampaignDiscussion(req, res, next) {
       });
     }
 
-    authorizeCampaignDiscussionCreate(req.user, customer.websiteId);
+    const authorizationContext = await getCampaignDiscussionAuthorization(
+      req.user,
+    );
+
+    authorizeCampaignDiscussionCreate(authorizationContext, customer.websiteId);
 
     const discussion = await createCampaignDiscussion({
       callAttemptId: req.body.callAttemptId,
