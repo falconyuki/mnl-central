@@ -3,7 +3,11 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./styles/app.css";
 
-import { AUTH_STATES, resolveAuthentication } from "./services/index.js";
+import {
+  AUTH_STATES,
+  resolveAuthentication,
+  logout,
+} from "./services/index.js";
 
 import { renderLoginView } from "./views/auth/loginView.js";
 import { renderChangePasswordView } from "./views/auth/changePasswordView.js";
@@ -12,8 +16,34 @@ import { renderAppShell } from "./views/app/appShell.js";
 
 const app = document.querySelector("#app");
 
+async function handleLogout() {
+  try {
+    await logout();
+  } finally {
+    renderLoginView(app, {
+      onAuthenticated(user) {
+        if (user.mustChangePassword) {
+          renderChangePasswordView(app, {
+            user,
+            onPasswordChanged() {
+              renderAuthenticatedApplication(user);
+            },
+          });
+
+          return;
+        }
+
+        renderAuthenticatedApplication(user);
+      },
+    });
+  }
+}
+
 function renderAuthenticatedApplication(user) {
-  renderAppShell(app, { user });
+  renderAppShell(app, {
+    user,
+    onLogout: handleLogout,
+  });
 }
 
 function renderAuthenticationState(result) {

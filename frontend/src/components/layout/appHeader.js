@@ -1,4 +1,4 @@
-export function renderAppHeader(container, { user } = {}) {
+export function renderAppHeader(container, { user, onLogout } = {}) {
   container.innerHTML = `
     <header class="app-header border-bottom bg-body">
       <div class="d-flex align-items-center justify-content-between px-3 py-2">
@@ -81,4 +81,20 @@ export function renderAppHeader(container, { user } = {}) {
       </div>
     </header>
   `;
+
+  const logoutButton = container.querySelector("#logout-button");
+
+  if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+      logoutButton.disabled = true;
+
+      try {
+        if (typeof onLogout === "function") {
+          await onLogout();
+        }
+      } finally {
+        logoutButton.disabled = false;
+      }
+    });
+  }
 }

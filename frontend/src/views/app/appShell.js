@@ -1,7 +1,7 @@
 import { renderAppHeader } from "../../components/layout/appHeader.js";
 import { renderAppSidebar } from "../../components/layout/appSidebar.js";
 
-export function renderAppShell(container, { user } = {}) {
+export function renderAppShell(container, { user, onLogout } = {}) {
   container.innerHTML = `
     <div class="app-shell min-vh-100 d-flex">
       <div id="app-sidebar-container"></div>
@@ -38,7 +38,7 @@ export function renderAppShell(container, { user } = {}) {
   const headerContainer = container.querySelector("#app-header-container");
 
   renderAppSidebar(sidebarContainer);
-  renderAppHeader(headerContainer, { user });
+  renderAppHeader(headerContainer, { user, onLogout });
 
   initializeSidebarToggle(container);
 }
