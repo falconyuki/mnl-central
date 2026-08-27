@@ -67,7 +67,7 @@ export async function listCallAttempts({
   const result = await execute(
     `SELECT
         ca.id,
-        ca.customer_id AS customerID,
+        ca.customer_id AS customerId,
         ca.user_id AS userId,
         ca.called_at AS calledAt,
         ca.call_status AS callStatus,
