@@ -62,13 +62,13 @@ export async function createCustomer({
   websiteId,
   username,
   name,
-  phone = null,
+  phone,
   status = CUSTOMER_STATUS.ACTIVE,
 }) {
   const normalizedWebsiteId = normalizeRequiredString(websiteId);
   const normalizedUsername = normalizeRequiredString(username);
   const normalizedName = normalizeRequiredString(name);
-  const normalizedPhone = normalizeNullableString(phone);
+  const normalizedPhone = normalizeRequiredString(phone);
 
   const website = await findWebsiteById(normalizedWebsiteId);
   if (!website) {
@@ -112,7 +112,7 @@ export async function createCustomer({
   return findCustomerById(id);
 }
 
-export async function updateCustomer(id, { name, phone = null }) {
+export async function updateCustomer(id, { name, phone }) {
   const existingCustomer = await findCustomerById(id);
   if (!existingCustomer) {
     throw new AppError("Customer not found.", {
@@ -126,7 +126,7 @@ export async function updateCustomer(id, { name, phone = null }) {
   }
 
   const normalizedName = normalizeRequiredString(name);
-  const normalizedPhone = normalizeNullableString(phone);
+  const normalizedPhone = normalizeRequiredString(phone);
 
   await updateCustomerRepository({
     id,

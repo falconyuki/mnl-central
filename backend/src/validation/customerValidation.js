@@ -26,8 +26,8 @@ export function validateCreateCustomerRequest(req, res, next) {
     return validationError(res, "Name is required.");
   }
 
-  if (phone !== undefined && phone !== null && typeof phone !== "string") {
-    return validationError(res, "Phone must be a string.");
+  if (!isNonEmptyString(phone)) {
+    return validationError(res, "Phone is required.");
   }
 
   if (status !== undefined && status !== "Active" && status !== "Inactive") {
@@ -37,11 +37,7 @@ export function validateCreateCustomerRequest(req, res, next) {
   req.body.websiteId = websiteId.trim();
   req.body.username = username.trim();
   req.body.name = name.trim();
-
-  if (typeof phone === "string") {
-    const normalizedPhone = phone.trim();
-    req.body.phone = normalizedPhone.length > 0 ? normalizedPhone : null;
-  }
+  req.body.phone = phone.trim();
 
   if (status !== undefined) {
     req.body.status = status;
@@ -56,16 +52,12 @@ export function validateUpdateCustomerRequest(req, res, next) {
     return validationError(res, "Name is required.");
   }
 
-  if (phone !== undefined && phone !== null && typeof phone !== "string") {
-    return validationError(res, "Phone must be a string.");
+  if (!isNonEmptyString(phone)) {
+    return validationError(res, "Phone is required.");
   }
 
   req.body.name = name.trim();
-
-  if (typeof phone === "string") {
-    const normalizedPhone = phone.trim();
-    req.body.phone = normalizedPhone.length > 0 ? normalizedPhone : null;
-  }
+  req.body.phone = phone.trim();
 
   next();
 }
