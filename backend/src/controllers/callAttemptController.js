@@ -142,7 +142,7 @@ export async function postCallAttemptWithDiscussion(req, res, next) {
       customerId: req.body.customerId,
       userId: req.user.id,
       callStatus: req.body.callStatus,
-      callRemarks: req.body.callRemarks,
+      callRemarks: req.body.remarks,
       campaignParticipationId: req.body.campaignParticipationId,
       discussionStatus: req.body.discussionStatus,
       discussionRemarks: req.body.discussionRemarks,
