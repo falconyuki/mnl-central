@@ -71,7 +71,7 @@ export async function listCampaignParticipations({
   );
 
   const result = await execute(
-    `SELECT cp.id, cp.campaign_id, cp.customer_id, cp.status, cp.created_at, cp.updated_at FROM campaign_participations cp
+    `SELECT cp.id, cp.campaign_id AS campaignId, cp.customer_id AS customerId, cp.status, cp.created_at AS createdAt, cp.updated_at AS updatedAt FROM campaign_participations cp
     INNER JOIN campaigns c ON c.id = cp.campaign_id
     ${whereClause}
     ORDER BY cp.created_at DESC, cp.id ASC LIMIT ? OFFSET ?`,
