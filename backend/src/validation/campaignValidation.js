@@ -12,10 +12,18 @@ function isNonEmptyString(value) {
 }
 
 const CAMPAIGN_STATUS = new Set(["Draft", "Active", "Expired", "Cancelled"]);
+const PROMOTION_STATUS = new Set(["Active", "Inactive"]);
 
 export function validateCreateCampaignRequest(req, res, next) {
-  const { websiteId, name, description, startDate, endDate, status } =
-    req.body ?? {};
+  const {
+    websiteId,
+    name,
+    description,
+    startDate,
+    endDate,
+    status,
+    promotion,
+  } = req.body ?? {};
 
   if (!isNonEmptyString(websiteId)) {
     return validationError(res, "Website ID is required.");
@@ -48,6 +56,45 @@ export function validateCreateCampaignRequest(req, res, next) {
     );
   }
 
+  if (!promotion || typeof promotion !== "object" || Array.isArray(promotion)) {
+    return validationError(res, "Promotion is required.");
+  }
+
+  if (!isNonEmptyString(promotion.name)) {
+    return validationError(res, "Promotion name is required.");
+  }
+
+  if (
+    promotion.description !== undefined &&
+    promotion.description !== null &&
+    typeof promotion.description !== "string"
+  ) {
+    return validationError(res, "Promotion description must be a string.");
+  }
+
+  if (promotion.amount !== undefined && promotion.amount !== null) {
+    if (
+      typeof promotion.amount !== "number" ||
+      !Number.isFinite(promotion.amount) ||
+      promotion.amount < 0
+    ) {
+      return validationError(
+        res,
+        "Promotion amount must be a positive number.",
+      );
+    }
+  }
+
+  if (
+    promotion.status !== undefined &&
+    !PROMOTION_STATUS.has(promotion.status)
+  ) {
+    return validationError(
+      res,
+      "Promotion status must be 'Active' or 'Inactive'.",
+    );
+  }
+
   req.body.websiteId = websiteId.trim();
   req.body.name = name.trim();
   req.body.startDate = startDate.trim();
@@ -61,6 +108,19 @@ export function validateCreateCampaignRequest(req, res, next) {
 
   if (status !== undefined) {
     req.body.status = status;
+  }
+
+  req.body.promotion.name = promotion.name.trim();
+  if (typeof promotion.description === "string") {
+    const normalizedPromotionDescription = promotion.description.trim();
+    req.body.promotion.description =
+      normalizedPromotionDescription.length > 0
+        ? normalizedPromotionDescription
+        : null;
+  }
+
+  if (promotion.status !== undefined) {
+    req.body.promotion.status = promotion.status;
   }
   next();
 }

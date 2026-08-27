@@ -70,15 +70,12 @@ export async function listPromotions({
   };
 }
 
-export async function createPromotion({
-  id,
-  campaignId,
-  name,
-  description,
-  amount,
-  status,
-}) {
-  return execute(
+export async function createPromotion(
+  { id, campaignId, name, description, amount, status },
+  transaction = null,
+) {
+  const executor = transaction ?? { execute };
+  return executor.execute(
     `INSERT INTO promotions (id, campaign_id, name, description, amount, status, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
     [id, campaignId, name, description, amount, status],

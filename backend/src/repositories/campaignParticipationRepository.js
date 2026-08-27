@@ -103,3 +103,19 @@ export async function updateCampaignParticipationStatus({ id, status }) {
     [status, id],
   );
 }
+
+export async function expireActiveCampaignParticipations(
+  campaignId,
+  transaction = null,
+) {
+  const executor = transaction ?? { execute };
+
+  return executor.execute(
+    `UPDATE campaign_participations
+        SET status = 'Expired',
+            updated_at = CURRENT_TIMESTAMP
+      WHERE campaign_id = ?
+        AND status = 'Active'`,
+    [campaignId],
+  );
+}

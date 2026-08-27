@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { withTransaction } from "../database/database.js";
 import {
   findCampaignById,
   listCampaigns as listCampaignsRepository,
@@ -7,6 +8,8 @@ import {
   updateCampaignStatus as updateCampaignStatusRepository,
 } from "../repositories/campaignRepository.js";
 import { findWebsiteById } from "../repositories/websiteRepository.js";
+import { createPromotion } from "../repositories/promotionRepository.js";
+import { expireActiveCampaignParticipations } from "../repositories/campaignParticipationRepository.js";
 import { AppError } from "../errors/AppError.js";
 import { ERROR_CODES } from "../errors/errorCodes.js";
 
@@ -130,6 +133,7 @@ export async function createCampaign({
   endDate,
   status = CAMPAIGN_STATUS.DRAFT,
   createdBy,
+  promotion,
 }) {
   const normalizedWebsiteId = normalizeRequiredString(websiteId);
   const normalizedName = normalizeRequiredString(name);
@@ -153,19 +157,47 @@ export async function createCampaign({
     });
   }
 
-  const id = randomUUID();
-  await createCampaignRepository({
-    id,
-    websiteId: normalizedWebsiteId,
-    name: normalizedName,
-    description: normalizedDescription,
-    startDate: normalizedStartDate,
-    endDate: normalizedEndDate,
-    status,
-    createdBy: normalizedCreatedBy,
-  });
+  const campaignId = randomUUID();
+  const promotionId = randomUUID();
+  const campaign = await withTransaction(async (transaction) => {
+    await createCampaignRepository(
+      {
+        id: campaignId,
+        websiteId: normalizedWebsiteId,
+        name: normalizedName,
+        description: normalizedDescription,
+        startDate: normalizedStartDate,
+        endDate: normalizedEndDate,
+        status: status ?? CAMPAIGN_STATUS.DRAFT,
+        createdBy: normalizedCreatedBy,
+      },
+      transaction,
+    );
 
-  return findCampaignById(id);
+    await createPromotion(
+      {
+        id: promotionId,
+        campaignId,
+        name: promotion.name,
+        description: promotion.description ?? null,
+        amount: promotion.amount ?? null,
+        status: promotion.status ?? "Active",
+      },
+      transaction,
+    );
+
+    return {
+      id: campaignId,
+      websiteId: normalizedWebsiteId,
+      name: normalizedName,
+      description: normalizedDescription ?? null,
+      startDate: normalizedStartDate,
+      endDate: normalizedEndDate,
+      status: status ?? CAMPAIGN_STATUS.DRAFT,
+      createdBy: normalizedCreatedBy,
+    };
+  });
+  return campaign;
 }
 
 export async function updateCampaign(
@@ -240,6 +272,15 @@ export async function updateCampaignStatus(id, status) {
     return existingCampaign;
   }
 
-  await updateCampaignStatusRepository(id, status);
+  const shouldExpireParticipations =
+    status === CAMPAIGN_STATUS.EXPIRED || status === CAMPAIGN_STATUS.CANCELLED;
+  if (shouldExpireParticipations) {
+    await withTransaction(async (transaction) => {
+      await updateCampaignStatusRepository(id, status, transaction);
+      await expireActiveCampaignParticipations(id, transaction);
+    });
+  } else {
+    await updateCampaignStatusRepository(id, status);
+  }
   return findCampaignById(id);
 }

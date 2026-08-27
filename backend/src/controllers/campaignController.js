@@ -76,6 +76,7 @@ export async function postCampaign(req, res, next) {
       endDate: req.body.endDate,
       status: req.body.status,
       createdBy: req.user.id,
+      promotion: req.body.promotion,
     });
 
     return res.status(201).json({

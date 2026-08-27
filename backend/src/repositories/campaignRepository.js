@@ -62,17 +62,12 @@ export async function listCampaigns({
   };
 }
 
-export async function createCampaign({
-  id,
-  websiteId,
-  name,
-  description,
-  startDate,
-  endDate,
-  status,
-  createdBy,
-}) {
-  return execute(
+export async function createCampaign(
+  { id, websiteId, name, description, startDate, endDate, status, createdBy },
+  transaction = null,
+) {
+  const executor = transaction ?? { execute };
+  return executor.execute(
     `INSERT INTO campaigns (id, website_id, name, description, start_date, end_date, status, created_by, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
     [id, websiteId, name, description, startDate, endDate, status, createdBy],
@@ -92,8 +87,9 @@ export async function updateCampaign({
   );
 }
 
-export async function updateCampaignStatus(id, status) {
-  return execute(
+export async function updateCampaignStatus(id, status, transaction = null) {
+  const executor = transaction ?? { execute };
+  return executor.execute(
     `UPDATE campaigns SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
     [status, id],
   );
