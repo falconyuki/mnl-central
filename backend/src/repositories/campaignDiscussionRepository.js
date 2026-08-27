@@ -4,12 +4,12 @@ export async function findCampaignDiscussionById(id) {
   const result = await execute(
     `SELECT
         id,
-        call_attempt_id,
-        campaign_participation_id,
-        discussion_status,
+        call_attempt_id AS callAttemptId,
+        campaign_participation_id AS campaignParticipationId,
+        discussion_status AS discussionStatus,
         remarks,
-        created_at,
-        updated_at
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM campaign_discussions
       WHERE id = ?
       LIMIT 1`,
@@ -26,12 +26,12 @@ export async function findCampaignDiscussionByCallAndParticipation(
   const result = await execute(
     `SELECT
         id,
-        call_attempt_id,
-        campaign_participation_id,
-        discussion_status,
+        call_attempt_id AS callAttemptId,
+        campaign_participation_id AS campaignParticipationId,
+        discussion_status AS discussionStatus,
         remarks,
-        created_at,
-        updated_at
+        created_at AS createdAt,
+        updated_at AS updatedAt
       FROM campaign_discussions
       WHERE call_attempt_id = ?
         AND campaign_participation_id = ?
@@ -108,12 +108,12 @@ export async function listCampaignDiscussions({
   const result = await execute(
     `SELECT
         cd.id,
-        cd.call_attempt_id,
-        cd.campaign_participation_id,
-        cd.discussion_status,
+        cd.call_attempt_id AS callAttemptId,
+        cd.campaign_participation_id AS campaignParticipationId,
+        cd.discussion_status AS discussionStatus,
         cd.remarks,
-        cd.created_at,
-        cd.updated_at
+        cd.created_at AS createdAt,
+        cd.updated_at AS updatedAt
       ${fromClause}
       ORDER BY cd.created_at DESC, cd.id ASC
       LIMIT ? OFFSET ?`,

@@ -2,7 +2,7 @@ import { execute } from "../database/database.js";
 
 export async function findCallAttemptById(id) {
   const result = await execute(
-    `SELECT id, customer_id, user_id, called_at, call_status, remarks, created_at, updated_at
+    `SELECT id, customer_id AS customerId, user_id AS userId, called_at AS calledAt, call_status AS callStatus, remarks, created_at AS createdAt, updated_at AS updatedAt
         FROM call_attempts WHERE id = ? LIMIT 1`,
     [id],
   );
@@ -67,13 +67,13 @@ export async function listCallAttempts({
   const result = await execute(
     `SELECT
         ca.id,
-        ca.customer_id,
-        ca.user_id,
-        ca.called_at,
-        ca.call_status,
+        ca.customer_id AS customerID,
+        ca.user_id AS userId,
+        ca.called_at AS calledAt,
+        ca.call_status AS callStatus,
         ca.remarks,
-        ca.created_at,
-        ca.updated_at
+        ca.created_at AS createdAt,
+        ca.updated_at AS updatedAt
       ${fromClause}
       ORDER BY ca.called_at DESC, ca.id ASC
       LIMIT ? OFFSET ?`,

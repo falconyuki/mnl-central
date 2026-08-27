@@ -2,7 +2,7 @@ import { execute } from "../database/database.js";
 
 export async function findPromotionById(id) {
   const result = await execute(
-    `SELECT id, campaign_id, name, description, amount, status, created_at, updated_at
+    `SELECT id, campaign_id AS campaignId, name, description, amount, status, created_at AS createdAt, updated_at AS updatedAt
             FROM promotions WHERE id = ? LIMIT 1`,
     [id],
   );
@@ -60,7 +60,7 @@ export async function listPromotions({
   );
 
   const result = await execute(
-    `SELECT promotions.id, promotions.campaign_id, promotions.name, promotions.description, promotions.amount, promotions.status, promotions.created_at, promotions.updated_at ${fromClause} ORDER BY promotions.created_at DESC, promotions.name ASC LIMIT ? OFFSET ?`,
+    `SELECT promotions.id, promotions.campaign_id AS campaignId, promotions.name, promotions.description, promotions.amount, promotions.status, promotions.created_at AS createdAt, promotions.updated_at AS updatedAt ${fromClause} ORDER BY promotions.created_at DESC, promotions.name ASC LIMIT ? OFFSET ?`,
     [...parameters, pageSize, offset],
   );
 

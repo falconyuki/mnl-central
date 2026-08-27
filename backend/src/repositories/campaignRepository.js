@@ -2,7 +2,7 @@ import { execute } from "../database/database.js";
 
 export async function findCampaignById(id) {
   const result = await execute(
-    `SELECT id, website_id, name, description, start_date, end_date, status, created_by, created_at, updated_at
+    `SELECT id, website_id AS websiteId, name, description, start_date AS startDate, end_date AS endDate, status, created_by AS createdBy, created_at AS createdAt, updated_at AS updatedAt
         FROM campaigns WHERE id = ? LIMIT 1`,
     [id],
   );
@@ -52,7 +52,7 @@ export async function listCampaigns({
   );
 
   const result = await execute(
-    `SELECT id, website_id, name, description, start_date, end_date, status, created_by, created_at, updated_at FROM campaigns ${whereClause} ORDER BY start_date DESC, name ASC LIMIT ? OFFSET ?`,
+    `SELECT id, website_id AS websiteId, name, description, start_date AS startDate, end_date AS endDate, status, created_by AS createdBy, created_at AS createdAt, updated_at AS updatedAt FROM campaigns ${whereClause} ORDER BY start_date DESC, name ASC LIMIT ? OFFSET ?`,
     [...parameters, pageSize, offset],
   );
 

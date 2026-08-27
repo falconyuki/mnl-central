@@ -2,7 +2,7 @@ import { execute } from "../database/database.js";
 
 export async function findCampaignParticipationById(id) {
   const result = await execute(
-    `SELECT id, campaign_id, customer_id, status, created_at, updated_at
+    `SELECT id, campaign_id AS campaignId, customer_id AS customerId, status, created_at AS createdAt, updated_at AS updatedAt
         FROM campaign_participations WHERE id = ? LIMIT 1`,
     [id],
   );
@@ -14,7 +14,7 @@ export async function findCampaignParticipationByCampaignAndCustomer(
   customerId,
 ) {
   const result = await execute(
-    `SELECT id, campaign_id, customer_id, status, created_at, updated_at
+    `SELECT id, campaign_id AS campaignId, customer_id AS customerId, status, created_at AS createdAt, updated_at AS updatedAt
         FROM campaign_participations WHERE campaign_id = ? AND customer_id = ? LIMIT 1`,
     [campaignId, customerId],
   );

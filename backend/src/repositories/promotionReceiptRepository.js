@@ -2,7 +2,7 @@ import { execute } from "../database/database.js";
 
 export async function findPromotionReceiptById(id) {
   const result = await execute(
-    `SELECT id, promotion_id, campaign_participation_id, status, received_at, staff_user_id, remarks, created_at, updated_at
+    `SELECT id, promotion_id AS promotionId, campaign_participation_id AS campaignParticipationId, status, received_at AS receivedAt, staff_user_id AS staffUserId, remarks, created_at AS createdAt, updated_at AS updatedAt
     FROM promotion_receipts WHERE id = ? LIMIT 1`,
     [id],
   );
@@ -14,7 +14,7 @@ export async function findPromotionReceiptByPromotionAndParticipation(
   campaignParticipationId,
 ) {
   const result = await execute(
-    `SELECT id, promotion_id, campaign_participation_id, status, received_at, staff_user_id, remarks, created_at, updated_at
+    `SELECT id, promotion_id as promotionId, campaign_participation_id AS campaignParticipationId, status, received_at AS receivedAt, staff_user_id AS staffUserId, remarks, created_at AS createdAt, updated_at AS updatedAt
     FROM promotion_receipts WHERE promotion_id = ? AND campaign_participation_id = ? LIMIT 1`,
     [promotionId, campaignParticipationId],
   );
@@ -78,7 +78,7 @@ export async function listPromotionReceipts({
   );
 
   const result = await execute(
-    `SELECT pr.id, pr.promotion_id, pr.campaign_participation_id, pr.status, pr.received_at, pr.staff_user_id, pr.remarks, pr.created_at, pr.updated_at
+    `SELECT pr.id, pr.promotion_id AS promotionId, pr.campaign_participation_id AS campaignParticipationId, pr.status, pr.received_at AS receivedAt, pr.staff_user_id AS staffUserId, pr.remarks, pr.created_at AS createdAt, pr.updated_at AS updatedAt
     FROM promotion_receipts pr
     INNER JOIN promotions p ON p.id = pr.promotion_id
     INNER JOIN campaigns c ON c.id = p.campaign_id

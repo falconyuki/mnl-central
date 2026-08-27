@@ -2,7 +2,7 @@ import { execute } from "../database/database.js";
 
 export async function findCustomerById(id) {
   const result = await execute(
-    `SELECT id, website_id, username, name, phone, status, created_at, updated_at
+    `SELECT id, website_id AS websiteId, username, name, phone, status, created_at AS createdAt, updated_at AS updatedAt
         FROM customers WHERE id = ? LIMIT 1`,
     [id],
   );
@@ -11,7 +11,7 @@ export async function findCustomerById(id) {
 
 export async function findCustomerByWebsiteAndUsername(websiteId, username) {
   const result = await execute(
-    `SELECT id, website_id, username, name, phone, status, created_at, updated_at
+    `SELECT id, website_id AS websiteId, username, name, phone, status, created_at AS createdAt, updated_at AS updatedAt
         FROM customers WHERE website_id = ? AND username = ? LIMIT 1`,
     [websiteId, username],
   );
@@ -61,13 +61,13 @@ export async function listCustomers({
   );
 
   const result = await execute(
-    `SELECT id, website_id, username, name, phone, status, created_at, updated_at FROM customers ${whereClause} ORDER BY name ASC, username ASC LIMIT ? OFFSET ?`,
+    `SELECT id, website_id AS websiteId, username, name, phone, status, created_at AS createdAt, updated_at AS updatedAt FROM customers ${whereClause} ORDER BY name ASC, username ASC LIMIT ? OFFSET ?`,
     [...parameters, pageSize, offset],
   );
 
   return {
     rows: result.rows,
-    count: Number(countResult.rows[0].total),
+    total: Number(countResult.rows[0].total),
   };
 }
 
