@@ -5,11 +5,13 @@ import {
   validateCreateCallAttemptRequest,
   validateCallAttemptIdParam,
   validateListCallAttemptsRequest,
+  validateCreateCallAttemptWithDiscussionRequest,
 } from "../validation/callAttemptValidation.js";
 import {
   getCallAttempts,
   getCallAttempt,
   postCallAttempt,
+  postCallAttemptWithDiscussion,
 } from "../controllers/callAttemptController.js";
 
 const router = Router();
@@ -20,6 +22,14 @@ router.get(
   requirePermission("CALL_VIEW"),
   validateListCallAttemptsRequest,
   getCallAttempts,
+);
+router.post(
+  "/with-discussion",
+  requireAuthentication,
+  requirePermission("CALL_CREATE"),
+  requirePermission("DISCUSSION_CREATE"),
+  validateCreateCallAttemptWithDiscussionRequest,
+  postCallAttemptWithDiscussion,
 );
 router.get(
   "/:id",

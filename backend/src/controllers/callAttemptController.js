@@ -4,13 +4,16 @@ import {
   authorizeCallAttemptCreate,
   getAuthorizedCallAttemptWebsiteIds,
 } from "../services/authorizations/callAttemptAuthorizationService.js";
-
 import {
   getCallAttemptById,
   listCallAttempts,
   createCallAttempt,
+  createCallAttemptWithDiscussion,
 } from "../services/callAttemptService.js";
-
+import {
+  getCampaignDiscussionAuthorization,
+  authorizeCampaignDiscussionCreate,
+} from "../services/authorizations/campaignDiscussionAuthorizationService.js";
 import { getCustomerById } from "../services/customerService.js";
 
 export async function getCallAttempts(req, res, next) {
@@ -102,6 +105,51 @@ export async function postCallAttempt(req, res, next) {
 
     return res.status(201).json({
       data: callAttempt,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function postCallAttemptWithDiscussion(req, res, next) {
+  try {
+    const customer = await getCustomerById(req.body.customerId);
+
+    if (!customer) {
+      return res.status(404).json({
+        error: {
+          code: "NOT_FOUND",
+          message: "Customer not found",
+        },
+      });
+    }
+
+    const callAuthorizationContext = await getCallAttemptAuthorization(
+      req.user,
+    );
+
+    authorizeCallAttemptCreate(callAuthorizationContext, customer.websiteId);
+
+    const discussionAuthorizationContext =
+      await getCampaignDiscussionAuthorization(req.user);
+
+    authorizeCampaignDiscussionCreate(
+      discussionAuthorizationContext,
+      customer.websiteId,
+    );
+
+    const result = await createCallAttemptWithDiscussion({
+      customerId: req.body.customerId,
+      userId: req.user.id,
+      callStatus: req.body.callStatus,
+      callRemarks: req.body.callRemarks,
+      campaignParticipationId: req.body.campaignParticipationId,
+      discussionStatus: req.body.discussionStatus,
+      discussionRemarks: req.body.discussionRemarks,
+    });
+
+    return res.status(201).json({
+      data: result,
     });
   } catch (error) {
     return next(error);

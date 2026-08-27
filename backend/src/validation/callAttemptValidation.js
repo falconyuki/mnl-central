@@ -21,6 +21,7 @@ const CALL_STATUSES = new Set([
   "WRONG_NUMBER",
   "INVALID_NUMBER",
 ]);
+const DISCUSSION_STATUSES = new Set(["DISCUSSED", "NOT_DISCUSSED"]);
 
 export function validateCreateCallAttemptRequest(req, res, next) {
   const { customerId, callStatus, remarks } = req.body ?? {};
@@ -122,6 +123,83 @@ export function validateListCallAttemptsRequest(req, res, next) {
 
   if (typeof userId === "string") {
     req.query.userId = userId.trim();
+  }
+
+  next();
+}
+
+export function validateCreateCallAttemptWithDiscussionRequest(req, res, next) {
+  const {
+    customerId,
+    callStatus,
+    remarks,
+    campaignParticipationId,
+    discussionStatus,
+    discussionRemarks,
+  } = req.body ?? {};
+
+  if (!isNonEmptyString(customerId)) {
+    return validationError(res, "Customer ID is required.");
+  }
+
+  if (!isNonEmptyString(callStatus)) {
+    return validationError(res, "Call status is required.");
+  }
+
+  const normalizedCallStatus = callStatus.trim();
+
+  if (!CALL_STATUSES.has(normalizedCallStatus)) {
+    return validationError(res, "Invalid call status.");
+  }
+
+  if (
+    remarks !== undefined &&
+    remarks !== null &&
+    typeof remarks !== "string"
+  ) {
+    return validationError(res, "Remarks must be a string.");
+  }
+
+  if (!isNonEmptyString(campaignParticipationId)) {
+    return validationError(res, "Campaign participation ID is required.");
+  }
+
+  if (!isNonEmptyString(discussionStatus)) {
+    return validationError(res, "Discussion status is required.");
+  }
+
+  const normalizedDiscussionStatus = discussionStatus.trim();
+
+  if (!DISCUSSION_STATUSES.has(normalizedDiscussionStatus)) {
+    return validationError(res, "Invalid discussion status.");
+  }
+
+  if (
+    discussionRemarks !== undefined &&
+    discussionRemarks !== null &&
+    typeof discussionRemarks !== "string"
+  ) {
+    return validationError(res, "Discussion remarks must be a string.");
+  }
+
+  req.body.customerId = customerId.trim();
+  req.body.callStatus = normalizedCallStatus;
+  req.body.campaignParticipationId = campaignParticipationId.trim();
+  req.body.discussionStatus = normalizedDiscussionStatus;
+
+  if (typeof remarks === "string") {
+    const normalizedRemarks = remarks.trim();
+
+    req.body.remarks = normalizedRemarks.length > 0 ? normalizedRemarks : null;
+  }
+
+  if (typeof discussionRemarks === "string") {
+    const normalizedDiscussionRemarks = discussionRemarks.trim();
+
+    req.body.discussionRemarks =
+      normalizedDiscussionRemarks.length > 0
+        ? normalizedDiscussionRemarks
+        : null;
   }
 
   next();
