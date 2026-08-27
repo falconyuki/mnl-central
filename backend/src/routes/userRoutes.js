@@ -23,6 +23,18 @@ import {
   validateUserIdParam,
 } from "../validation/userValidation.js";
 
+import {
+  listUserWebsiteAccessController,
+  grantUserWebsiteAccessController,
+  revokeUserWebsiteAccessController,
+} from "../controllers/userWebsiteAccessController.js";
+
+import {
+  validateUserWebsiteAccessUserIdParam,
+  validateGrantUserWebsiteAccessRequest,
+  validateRevokeUserWebsiteAccessRequest,
+} from "../validation/userWebsiteAccessValidation.js";
+
 const router = Router();
 
 router.use(requireAuthentication);
@@ -78,6 +90,29 @@ router.post(
   validateUserIdParam,
   validateResetUserPasswordRequest,
   resetUserPasswordController,
+);
+
+router.get(
+  "/:id/websites",
+  requirePermission("USER_MANAGE_WEBSITE_ACCESS"),
+  validateUserWebsiteAccessUserIdParam,
+  listUserWebsiteAccessController,
+);
+
+router.post(
+  "/:id/websites",
+  requirePermission("USER_MANAGE_WEBSITE_ACCESS"),
+  validateUserWebsiteAccessUserIdParam,
+  validateGrantUserWebsiteAccessRequest,
+  grantUserWebsiteAccessController,
+);
+
+router.delete(
+  "/:id/websites",
+  requirePermission("USER_MANAGE_WEBSITE_ACCESS"),
+  validateUserWebsiteAccessUserIdParam,
+  validateRevokeUserWebsiteAccessRequest,
+  revokeUserWebsiteAccessController,
 );
 
 export default router;
