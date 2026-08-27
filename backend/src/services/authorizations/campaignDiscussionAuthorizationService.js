@@ -1,4 +1,8 @@
-import { authorize, authorizeOrThrow } from "./authorizationService.js";
+import {
+  buildAuthorizationContext,
+  hasWebsiteAccess,
+  authorizeOrThrow,
+} from "./authorizationService.js";
 
 import { findCampaignDiscussionById } from "../../repositories/campaignDiscussionRepository.js";
 import { findCallAttemptById } from "../../repositories/callAttemptRepository.js";
@@ -10,44 +14,47 @@ const DISCUSSION_VIEW_PERMISSION = "DISCUSSION_VIEW";
 const DISCUSSION_CREATE_PERMISSION = "DISCUSSION_CREATE";
 
 async function resolveDiscussionWebsiteId(discussion) {
-  const callAttempt = await findCallAttemptById(discussion.call_attempt_id);
+  const callAttempt = await findCallAttemptById(discussion.callAttemptId);
 
   if (!callAttempt) {
     return null;
   }
 
-  const customer = await findCustomerById(callAttempt.customer_id);
+  const customer = await findCustomerById(callAttempt.customerId);
 
   if (!customer) {
     return null;
   }
 
   const participation = await findCampaignParticipationById(
-    discussion.campaign_participation_id,
+    discussion.campaignParticipationId,
   );
 
   if (!participation) {
     return null;
   }
 
-  const campaign = await findCampaignById(participation.campaign_id);
+  const campaign = await findCampaignById(participation.campaignId);
 
   if (!campaign) {
     return null;
   }
 
-  if (customer.website_id !== campaign.website_id) {
+  if (customer.websiteId !== campaign.websiteId) {
     return null;
   }
 
-  return customer.website_id;
+  return customer.websiteId;
 }
 
 export async function getCampaignDiscussionAuthorization(user, discussionId) {
+  const authorizationContext = await buildAuthorizationContext(user);
+
   const discussion = await findCampaignDiscussionById(discussionId);
 
   if (!discussion) {
     return {
+      authorizationContext,
       discussion: null,
       websiteId: null,
       allowed: false,
@@ -59,6 +66,7 @@ export async function getCampaignDiscussionAuthorization(user, discussionId) {
 
   if (!websiteId) {
     return {
+      authorizationContext,
       discussion,
       websiteId: null,
       allowed: false,
@@ -66,43 +74,59 @@ export async function getCampaignDiscussionAuthorization(user, discussionId) {
     };
   }
 
-  const authorization = authorize(user, DISCUSSION_VIEW_PERMISSION, websiteId);
+  const authorization = {
+    ...authorizeOrThrow(
+      authorizationContext,
+      DISCUSSION_VIEW_PERMISSION,
+      websiteId,
+    ),
+  };
 
   return {
+    authorizationContext,
     discussion,
     websiteId,
     ...authorization,
   };
 }
 
-export async function authorizeCampaignDiscussionView(authorizationContext) {
-  return authorizeOrThrow(authorizationContext);
+export function authorizeCampaignDiscussionView(
+  authorizationContext,
+  websiteId,
+) {
+  return authorizeOrThrow(
+    authorizationContext,
+    DISCUSSION_VIEW_PERMISSION,
+    websiteId,
+  );
 }
 
-export async function authorizeCampaignDiscussionCreate(user, websiteId) {
-  const authorization = authorize(
-    user,
+export function authorizeCampaignDiscussionCreate(
+  authorizationContext,
+  websiteId,
+) {
+  return authorizeOrThrow(
+    authorizationContext,
     DISCUSSION_CREATE_PERMISSION,
     websiteId,
   );
-
-  return authorizeOrThrow(authorization);
 }
 
-export function getAuthorizedCampaignDiscussionWebsiteIds(user) {
-  if (user?.isAdministrator === true) {
+export function getAuthorizedCampaignDiscussionWebsiteIds(
+  authorizationContext,
+) {
+  if (authorizationContext.isAdministrator) {
     return null;
   }
 
-  return Array.isArray(user?.websiteIds) ? user.websiteIds : [];
+  return authorizationContext.websites
+    .filter((website) => website.status === "Active")
+    .map((website) => website.id);
 }
 
-export function canAccessCampaignDiscussionWebsite(user, websiteId) {
-  const websiteIds = getAuthorizedCampaignDiscussionWebsiteIds(user);
-
-  if (websiteIds === null) {
-    return true;
-  }
-
-  return websiteIds.includes(websiteId);
+export function canAccessCampaignDiscussionWebsite(
+  authorizationContext,
+  websiteId,
+) {
+  return hasWebsiteAccess(authorizationContext, websiteId);
 }

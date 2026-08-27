@@ -83,7 +83,7 @@ export async function postCampaignDiscussion(req, res, next) {
       });
     }
 
-    const customer = await findCustomerById(callAttempt.customer_id);
+    const customer = await findCustomerById(callAttempt.customerId);
 
     if (!customer) {
       return res.status(404).json({
@@ -118,7 +118,7 @@ export async function postCampaignDiscussion(req, res, next) {
       });
     }
 
-    authorizeCampaignDiscussionCreate(req.user, customer.website_id);
+    authorizeCampaignDiscussionCreate(req.user, customer.websiteId);
 
     const discussion = await createCampaignDiscussion({
       callAttemptId: req.body.callAttemptId,

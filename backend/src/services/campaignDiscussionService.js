@@ -104,7 +104,7 @@ export async function createCampaignDiscussion({
     });
   }
 
-  if (callAttempt.customer_id !== campaignParticipation.customer_id) {
+  if (callAttempt.customerId !== campaignParticipation.customerId) {
     throw new AppError(
       "Call attempt and campaign participation must belong to the same customer.",
       {

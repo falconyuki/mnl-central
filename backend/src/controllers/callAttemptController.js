@@ -53,7 +53,7 @@ export async function getCallAttempt(req, res, next) {
       });
     }
 
-    const customer = await getCustomerById(callAttempt.customer_id);
+    const customer = await getCustomerById(callAttempt.customerId);
 
     if (!customer) {
       return res.status(404).json({
@@ -66,7 +66,7 @@ export async function getCallAttempt(req, res, next) {
 
     const authorizationContext = await getCallAttemptAuthorization(req.user);
 
-    authorizeCallAttemptView(authorizationContext, customer.website_id);
+    authorizeCallAttemptView(authorizationContext, customer.websiteId);
 
     return res.status(200).json({
       data: callAttempt,
@@ -91,7 +91,7 @@ export async function postCallAttempt(req, res, next) {
 
     const authorizationContext = await getCallAttemptAuthorization(req.user);
 
-    authorizeCallAttemptCreate(authorizationContext, customer.website_id);
+    authorizeCallAttemptCreate(authorizationContext, customer.websiteId);
 
     const callAttempt = await createCallAttempt({
       customerId: req.body.customerId,
