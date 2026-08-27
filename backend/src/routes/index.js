@@ -8,6 +8,7 @@ import promotionRoutes from "./promotionRoutes.js";
 import promotionReceiptRoutes from "./promotionReceiptRoutes.js";
 import callAttemptRoutes from "./callAttemptRoutes.js";
 import campaignDiscussionRoutes from "./campaignDiscussionRoutes.js";
+import userRoutes from "./userRoutes.js";
 
 const router = Router();
 
@@ -30,5 +31,6 @@ router.use("/promotions", promotionRoutes);
 router.use("/promotion-receipts", promotionReceiptRoutes);
 router.use("/call-attempts", callAttemptRoutes);
 router.use("/campaign-discussions", campaignDiscussionRoutes);
+router.use("/users", userRoutes);
 
 export default router;

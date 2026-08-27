@@ -252,3 +252,39 @@ export async function createUser({
     ],
   );
 }
+
+export async function updateUser({ id, displayName, updatedAt }) {
+  await execute(
+    `UPDATE users SET display_name = ?, updated_at = ? WHERE id = ?`,
+    [displayName, updatedAt, id],
+  );
+}
+
+export async function updateUserStatus({ id, status, updatedAt }) {
+  await execute(`UPDATE users SET status = ?, updated_at = ? WHERE id = ?`, [
+    status,
+    updatedAt,
+    id,
+  ]);
+}
+
+export async function updateUserRole({ id, roleId, updatedAt }) {
+  await execute(`UPDATE users SET role_id = ?, updated_at = ? WHERE id = ?`, [
+    roleId,
+    updatedAt,
+    id,
+  ]);
+}
+
+export async function updateUserPassword({
+  id,
+  passwordHash,
+  mustChangePassword,
+  updatedAt,
+}) {
+  await execute(
+    `UPDATE users SET password_hash = ?, must_change_password = ?, updated_at = ?
+      WHERE id = ?`,
+    [passwordHash, mustChangePassword ? 1 : 0, updatedAt, id],
+  );
+}

@@ -5,7 +5,14 @@ import {
   findUserForManagementById,
   listUsers as listUsersRepository,
   createUser as createUserRepository,
+  updateUser as updateUserRepository,
+  updateUserStatus as updateUserStatusRepository,
+  updateUserRole as updateUserRoleRepository,
+  updateUserPassword as updateUserPasswordRepository,
 } from "../repositories/userRepository.js";
+import { findRoleById } from "../repositories/roleRepository.js";
+import { AppError } from "../errors/AppError.js";
+import { ERROR_CODES } from "../errors/errorCodes.js";
 
 function normalizeNullableString(value) {
   if (value === null || value === undefined) {
@@ -63,6 +70,92 @@ export async function createUser({ username, displayName, password, roleId }) {
     mustChangePassword: true,
     createdAt: now,
     updatedAt: now,
+  });
+
+  return findUserForManagementById(id);
+}
+
+export async function updateUser({ id, displayName }) {
+  const user = await findUserForManagementById(id);
+
+  if (!user) {
+    throw new AppError("User not found.", ERROR_CODES.NOT_FOUND);
+  }
+
+  const normalizedDisplayName = displayName.trim();
+
+  const updatedAt = new Date().toISOString();
+
+  await updateUserRepository({
+    id,
+    displayName: normalizedDisplayName,
+    updatedAt,
+  });
+
+  return findUserForManagementById(id);
+}
+
+export async function updateUserStatus({ id, status }) {
+  const user = await findUserForManagementById(id);
+
+  if (!user) {
+    throw new AppError("User not found.", ERROR_CODES.NOT_FOUND);
+  }
+
+  if (user.status === status) {
+    return user;
+  }
+
+  const updatedAt = new Date().toISOString();
+
+  await updateUserStatusRepository({ id, status, updatedAt });
+
+  return findUserForManagementById(id);
+}
+
+export async function updateUserRole({ id, roleId }) {
+  const user = await findUserForManagementById(id);
+
+  if (!user) {
+    throw new AppError("User not found.", ERROR_CODES.NOT_FOUND);
+  }
+
+  if (user.roleId === roleId) {
+    return user;
+  }
+
+  const role = await findRoleById(roleId);
+
+  if (!role) {
+    throw new AppError("Role not found.", ERROR_CODES.NOT_FOUND);
+  }
+
+  const updatedAt = new Date().toISOString();
+
+  await updateUserRoleRepository({
+    id,
+    roleId,
+    updatedAt,
+  });
+
+  return findUserForManagementById(id);
+}
+
+export async function resetUserPassword({ id, password }) {
+  const user = await findUserForManagementById(id);
+
+  if (!user) {
+    throw new AppError("User not found.", ERROR_CODES.NOT_FOUND);
+  }
+
+  const passwordHash = await hashPassword(password);
+  const updatedAt = new Date().toISOString();
+
+  await updateUserPasswordRepository({
+    id,
+    passwordHash,
+    mustChangePassword: true,
+    updatedAt,
   });
 
   return findUserForManagementById(id);
