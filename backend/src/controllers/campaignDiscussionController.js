@@ -6,15 +6,11 @@ import {
 } from "../services/authorizations/campaignDiscussionAuthorizationService.js";
 
 import {
-  getCampaignDiscussionById,
+  getCampaignDiscussionAuthorizationData,
+  resolveCampaignDiscussionContext,
   listCampaignDiscussions,
   createCampaignDiscussion,
 } from "../services/campaignDiscussionService.js";
-
-import { findCallAttemptById } from "../repositories/callAttemptRepository.js";
-import { findCustomerById } from "../repositories/customerRepository.js";
-import { findCampaignParticipationById } from "../repositories/campaignParticipationRepository.js";
-import { findCampaignById } from "../repositories/campaignRepository.js";
 
 export async function getCampaignDiscussions(req, res, next) {
   try {
@@ -49,9 +45,11 @@ export async function getCampaignDiscussions(req, res, next) {
 
 export async function getCampaignDiscussion(req, res, next) {
   try {
-    const discussion = await getCampaignDiscussionById(req.params.id);
+    const authorizationData = await getCampaignDiscussionAuthorizationData(
+      req.params.id,
+    );
 
-    if (!discussion) {
+    if (!authorizationData) {
       return res.status(404).json({
         error: {
           code: "NOT_FOUND",
@@ -60,36 +58,17 @@ export async function getCampaignDiscussion(req, res, next) {
       });
     }
 
-    const callAttempt = await findCallAttemptById(discussion.callAttemptId);
-
-    if (!callAttempt) {
-      return res.status(404).json({
-        error: {
-          code: "NOT_FOUND",
-          message: "Call attempt not found",
-        },
-      });
-    }
-
-    const customer = await findCustomerById(callAttempt.customerId);
-
-    if (!customer) {
-      return res.status(404).json({
-        error: {
-          code: "NOT_FOUND",
-          message: "Customer not found",
-        },
-      });
-    }
-
     const authorizationContext = await getCampaignDiscussionAuthorization(
       req.user,
     );
 
-    authorizeCampaignDiscussionView(authorizationContext, customer.websiteId);
+    authorizeCampaignDiscussionView(
+      authorizationContext,
+      authorizationData.customer.websiteId,
+    );
 
     return res.status(200).json({
-      data: discussion,
+      data: authorizationData.discussion,
     });
   } catch (error) {
     return next(error);
@@ -98,57 +77,19 @@ export async function getCampaignDiscussion(req, res, next) {
 
 export async function postCampaignDiscussion(req, res, next) {
   try {
-    const callAttempt = await findCallAttemptById(req.body.callAttemptId);
-
-    if (!callAttempt) {
-      return res.status(404).json({
-        error: {
-          code: "NOT_FOUND",
-          message: "Call attempt not found",
-        },
-      });
-    }
-
-    const customer = await findCustomerById(callAttempt.customerId);
-
-    if (!customer) {
-      return res.status(404).json({
-        error: {
-          code: "NOT_FOUND",
-          message: "Customer not found",
-        },
-      });
-    }
-
-    const participation = await findCampaignParticipationById(
-      req.body.campaignParticipationId,
-    );
-
-    if (!participation) {
-      return res.status(404).json({
-        error: {
-          code: "NOT_FOUND",
-          message: "Campaign participation not found",
-        },
-      });
-    }
-
-    const campaign = await findCampaignById(participation.campaignId);
-
-    if (!campaign) {
-      return res.status(404).json({
-        error: {
-          code: "NOT_FOUND",
-          message: "Campaign not found",
-        },
-      });
-    }
-
     const authorizationContext = await getCampaignDiscussionAuthorization(
       req.user,
     );
 
-    authorizeCampaignDiscussionCreate(authorizationContext, customer.websiteId);
+    const discussionContext = await resolveCampaignDiscussionContext({
+      callAttemptId: req.body.callAttemptId,
+      campaignParticipationId: req.body.campaignParticipationId,
+    });
+
+    authorizeCampaignDiscussionCreate(
+      authorizationContext,
+      discussionContext.customer.websiteId,
+    );
 
     const discussion = await createCampaignDiscussion({
       callAttemptId: req.body.callAttemptId,

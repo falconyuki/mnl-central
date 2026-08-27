@@ -8,7 +8,9 @@ import {
 } from "../repositories/campaignDiscussionRepository.js";
 
 import { findCallAttemptById } from "../repositories/callAttemptRepository.js";
+import { findCustomerById } from "../repositories/customerRepository.js";
 import { findCampaignParticipationById } from "../repositories/campaignParticipationRepository.js";
+import { findCampaignById } from "../repositories/campaignRepository.js";
 
 import { AppError } from "../errors/AppError.js";
 import { ERROR_CODES } from "../errors/errorCodes.js";
@@ -89,6 +91,19 @@ export async function createCampaignDiscussion({
     });
   }
 
+  const customer = await findCustomerById(callAttempt.customerId);
+
+  if (!customer) {
+    throw new AppError("Customer not found.", {
+      code: ERROR_CODES.NOT_FOUND,
+      statusCode: 404,
+      details: {
+        resource: "Customer",
+        id: callAttempt.customerId,
+      },
+    });
+  }
+
   const campaignParticipation = await findCampaignParticipationById(
     normalizedCampaignParticipationId,
   );
@@ -114,6 +129,34 @@ export async function createCampaignDiscussion({
           resource: "CampaignDiscussion",
           callAttemptId: normalizedCallAttemptId,
           campaignParticipationId: normalizedCampaignParticipationId,
+        },
+      },
+    );
+  }
+
+  const campaign = await findCampaignById(campaignParticipation.campaignId);
+
+  if (!campaign) {
+    throw new AppError("Campaign not found.", {
+      code: ERROR_CODES.NOT_FOUND,
+      statusCode: 404,
+      details: {
+        resource: "Campaign",
+        id: campaignParticipation.campaignId,
+      },
+    });
+  }
+
+  if (customer.websiteId !== campaign.websiteId) {
+    throw new AppError(
+      "Customer and campaign must belong to the same website.",
+      {
+        code: ERROR_CODES.BUSINESS_RULE_VIOLATION,
+        statusCode: 400,
+        details: {
+          resource: "CampaignDiscussion",
+          customerId: customer.id,
+          campaignId: campaign.id,
         },
       },
     );
@@ -147,4 +190,145 @@ export async function createCampaignDiscussion({
   });
 
   return findCampaignDiscussionById(id);
+}
+
+export async function getCampaignDiscussionAuthorizationData(id) {
+  const discussion = await findCampaignDiscussionById(id);
+
+  if (!discussion) {
+    return null;
+  }
+
+  const callAttempt = await findCallAttemptById(discussion.callAttemptId);
+
+  if (!callAttempt) {
+    throw new AppError("Call attempt not found.", {
+      code: ERROR_CODES.NOT_FOUND,
+      statusCode: 404,
+      details: {
+        resource: "Call Attempt",
+        id: discussion.callAttemptId,
+      },
+    });
+  }
+
+  const customer = await findCustomerById(callAttempt.customerId);
+
+  if (!customer) {
+    throw new AppError("Customer not found.", {
+      code: ERROR_CODES.NOT_FOUND,
+      statusCode: 404,
+      details: {
+        resource: "Customer",
+        id: callAttempt.customerId,
+      },
+    });
+  }
+
+  return {
+    discussion,
+    customer,
+  };
+}
+
+export async function resolveCampaignDiscussionContext({
+  callAttemptId,
+  campaignParticipationId,
+}) {
+  const normalizedCallAttemptId = normalizeRequiredString(callAttemptId);
+
+  const normalizedCampaignParticipationId = normalizeRequiredString(
+    campaignParticipationId,
+  );
+
+  const callAttempt = await findCallAttemptById(normalizedCallAttemptId);
+
+  if (!callAttempt) {
+    throw new AppError("Call attempt not found.", {
+      code: ERROR_CODES.NOT_FOUND,
+      statusCode: 404,
+      details: {
+        resource: "Call Attempt",
+        id: normalizedCallAttemptId,
+      },
+    });
+  }
+
+  const customer = await findCustomerById(callAttempt.customerId);
+
+  if (!customer) {
+    throw new AppError("Customer not found.", {
+      code: ERROR_CODES.NOT_FOUND,
+      statusCode: 404,
+      details: {
+        resource: "Customer",
+        id: callAttempt.customerId,
+      },
+    });
+  }
+
+  const campaignParticipation = await findCampaignParticipationById(
+    normalizedCampaignParticipationId,
+  );
+
+  if (!campaignParticipation) {
+    throw new AppError("Campaign participation not found.", {
+      code: ERROR_CODES.NOT_FOUND,
+      statusCode: 404,
+      details: {
+        resource: "Campaign Participation",
+        id: normalizedCampaignParticipationId,
+      },
+    });
+  }
+
+  if (callAttempt.customerId !== campaignParticipation.customerId) {
+    throw new AppError(
+      "Call attempt and campaign participation must belong to the same customer.",
+      {
+        code: ERROR_CODES.BUSINESS_RULE_VIOLATION,
+        statusCode: 400,
+        details: {
+          resource: "CampaignDiscussion",
+          callAttemptId: normalizedCallAttemptId,
+          campaignParticipationId: normalizedCampaignParticipationId,
+        },
+      },
+    );
+  }
+
+  const campaign = await findCampaignById(campaignParticipation.campaignId);
+
+  if (!campaign) {
+    throw new AppError("Campaign not found.", {
+      code: ERROR_CODES.NOT_FOUND,
+      statusCode: 404,
+      details: {
+        resource: "Campaign",
+        id: campaignParticipation.campaignId,
+      },
+    });
+  }
+
+  if (customer.websiteId !== campaign.websiteId) {
+    throw new AppError(
+      "Customer and campaign must belong to the same website.",
+      {
+        code: ERROR_CODES.BUSINESS_RULE_VIOLATION,
+        statusCode: 400,
+        details: {
+          resource: "CampaignDiscussion",
+          customerId: customer.id,
+          campaignId: campaign.id,
+        },
+      },
+    );
+  }
+
+  return {
+    callAttempt,
+    customer,
+    campaignParticipation,
+    campaign,
+  };
 }
