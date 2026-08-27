@@ -126,14 +126,12 @@ export async function listCampaignDiscussions({
   };
 }
 
-export async function createCampaignDiscussion({
-  id,
-  callAttemptId,
-  campaignParticipationId,
-  discussionStatus,
-  remarks,
-}) {
-  return execute(
+export async function createCampaignDiscussion(
+  { id, callAttemptId, campaignParticipationId, discussionStatus, remarks },
+  transaction = null,
+) {
+  const executor = transaction ?? { execute };
+  return executor.execute(
     `INSERT INTO campaign_discussions (
         id,
         call_attempt_id,

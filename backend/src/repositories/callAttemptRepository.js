@@ -86,15 +86,12 @@ export async function listCallAttempts({
   };
 }
 
-export async function createCallAttempt({
-  id,
-  customerId,
-  userId,
-  calledAt,
-  callStatus,
-  remarks,
-}) {
-  return execute(
+export async function createCallAttempt(
+  { id, customerId, userId, calledAt, callStatus, remarks },
+  transaction = null,
+) {
+  const executor = transaction ?? { execute };
+  return executor.execute(
     `INSERT INTO call_attempts (
         id,
         customer_id,
