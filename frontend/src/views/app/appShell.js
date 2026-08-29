@@ -1,5 +1,6 @@
 import { renderAppHeader } from "../../components/layout/appHeader.js";
 import { renderAppSidebar } from "../../components/layout/appSidebar.js";
+import { resolveView } from "./viewRegistry.js";
 
 export function renderAppShell(container, { user, onLogout } = {}) {
   container.innerHTML = `
@@ -13,21 +14,6 @@ export function renderAppShell(container, { user, onLogout } = {}) {
           class="app-content flex-grow-1 bg-body-tertiary"
           id="app-content"
         >
-          <div class="container-fluid p-3 p-md-4">
-            <div
-              class="card border-0 shadow-sm"
-            >
-              <div class="card-body">
-                <h2 class="h5 mb-2">
-                  Dashboard
-                </h2>
-
-                <p class="text-body-secondary mb-0">
-                  Application shell is ready.
-                </p>
-              </div>
-            </div>
-          </div>
         </main>
       </div>
     </div>
@@ -39,8 +25,10 @@ export function renderAppShell(container, { user, onLogout } = {}) {
 
   renderAppSidebar(sidebarContainer);
   renderAppHeader(headerContainer, { user, onLogout });
+  renderInitialView(container);
 
   initializeSidebarToggle(container);
+  initializeNavigation(container);
 }
 
 function initializeSidebarToggle(container) {
@@ -55,5 +43,60 @@ function initializeSidebarToggle(container) {
     const isOpen = sidebar.classList.toggle("is-open");
 
     toggleButton.setAttribute("aria-expanded", String(isOpen));
+  });
+}
+
+function renderInitialView(container) {
+  const contentContainer = container.querySelector("#app-content");
+
+  if (!contentContainer) {
+    return;
+  }
+
+  const view = resolveView("dashboard");
+
+  if (!view) {
+    return;
+  }
+
+  contentContainer.innerHTML = view.render();
+
+  const pageTitle = container.querySelector("#page-title");
+
+  if (pageTitle) {
+    pageTitle.textContent = view.title;
+  }
+}
+
+function initializeNavigation(container) {
+  const navigationItems = container.querySelectorAll("[data-nav-item]");
+  const contentContainer = container.querySelector("#app-content");
+  const pageTitle = container.querySelector("#page-title");
+
+  if (!contentContainer) {
+    return;
+  }
+
+  navigationItems.forEach((navigationItem) => {
+    navigationItem.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      const viewId = navigationItem.dataset.navItem;
+      const view = resolveView(viewId);
+
+      if (!view) {
+        return;
+      }
+
+      contentContainer.innerHTML = view.render();
+
+      if (pageTitle) {
+        pageTitle.textContent = view.title;
+      }
+
+      navigationItems.forEach((item) => {
+        item.classList.toggle("active", item === navigationItem);
+      });
+    });
   });
 }
