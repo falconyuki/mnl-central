@@ -63,6 +63,18 @@ export function renderAppSidebar(container) {
           <a
             href="#"
             class="nav-link"
+            data-nav-item="campaignParticipations"
+          >
+            <i
+              class="bi bi-person-up"
+              aria-hidden="true"
+            ></i>
+            Campaign Participations
+          </a>
+
+          <a
+            href="#"
+            class="nav-link"
             data-nav-item="websites"
           >
             <i
