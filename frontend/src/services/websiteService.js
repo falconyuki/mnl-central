@@ -26,3 +26,35 @@ export function listWebsites({ token, page, pageSize, search, status } = {}) {
     token,
   });
 }
+
+export function createWebsite({ token, name, code, description, status } = {}) {
+  return apiRequest("/websites", {
+    method: "POST",
+    token,
+    body: {
+      name,
+      code,
+      description,
+      ...(status !== undefined ? { status } : {}),
+    },
+  });
+}
+
+export function updateWebsite({ token, id, name, code, description } = {}) {
+  return apiRequest(`/websites/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    token,
+    body: {
+      name,
+      code,
+      description,
+    },
+  });
+}
+
+export function disableWebsite({ token, id } = {}) {
+  return apiRequest(`/websites/${encodeURIComponent(id)}/disable`, {
+    method: "POST",
+    token,
+  });
+}

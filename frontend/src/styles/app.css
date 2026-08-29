@@ -65,10 +65,12 @@ body {
   }
 }
 
-.users-table-container {
+.users-table-container,
+.websites-table-container {
   overflow: visible;
 }
 
-.users-table-container .dropdown-menu {
+.users-table-container .dropdown-menu,
+.websites-table-container .dropdown-menu {
   z-index: 1055;
 }

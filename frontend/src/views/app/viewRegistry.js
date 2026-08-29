@@ -1,4 +1,5 @@
 import { renderUsersView, initializeUsersView } from "./usersView.js";
+import { renderWebsitesView, initializeWebsitesView } from "./websitesView.js";
 
 const VIEW_REGISTRY = {
   dashboard: {
@@ -33,23 +34,8 @@ const VIEW_REGISTRY = {
   websites: {
     id: "websites",
     title: "Websites",
-    render() {
-      return `
-        <div class="container-fluid p-3 p-md-4">
-          <div class="card border-0 shadow-sm">
-            <div class="card-body">
-              <h2 class="h5 mb-2">
-                Websites
-              </h2>
-
-              <p class="text-body-secondary mb-0">
-                Website Management will be implemented here.
-              </p>
-            </div>
-          </div>
-        </div>
-      `;
-    },
+    render: renderWebsitesView,
+    initialize: initializeWebsitesView,
   },
 
   campaigns: {
