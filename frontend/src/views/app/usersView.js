@@ -4,6 +4,8 @@ import { getAccessToken } from "../../services/authService.js";
 import { listUsers, createUser } from "../../services/userService.js";
 import { listRoles } from "../../services/roleService.js";
 
+import { escapeHtml, getStatusBadgeClass } from "../../utils/formatUtils.js";
+
 export function renderUsersView() {
   return `
     <div class="container-fluid p-3 p-md-4">
@@ -391,25 +393,4 @@ function renderUsers(users, tableBody) {
       `,
     )
     .join("");
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function getStatusBadgeClass(status) {
-  if (status === "Active") {
-    return "text-bg-success";
-  }
-
-  if (status === "Disabled") {
-    return "text-bg-secondary";
-  }
-
-  return "text-bg-light";
 }
