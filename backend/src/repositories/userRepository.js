@@ -151,10 +151,16 @@ export async function listUsers({
   search = null,
   status = null,
   roleId = null,
+  currentUserId = null,
 } = {}) {
   const offset = (page - 1) * pageSize;
   const conditions = [];
   const parameters = [];
+
+  if (currentUserId) {
+    conditions.push(`u.id != ?`);
+    parameters.push(currentUserId);
+  }
 
   if (search) {
     conditions.push(`(u.username LIKE ? OR u.display_name LIKE ?)`);

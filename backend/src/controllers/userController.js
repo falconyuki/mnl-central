@@ -15,6 +15,8 @@ export async function listUsersController(req, res, next) {
       pageSize: req.query.pageSize,
       search: req.query.search,
       status: req.query.status,
+      roleId: req.query.roleId,
+      currentUserId: req.auth.userId,
     });
 
     return res.status(200).json({

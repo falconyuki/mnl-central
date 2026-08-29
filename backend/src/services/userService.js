@@ -34,6 +34,7 @@ export async function listUsers({
   search = null,
   status = null,
   roleId = null,
+  currentUserId = null,
 } = {}) {
   const normalizedSearch = normalizeNullableString(search);
 
@@ -43,6 +44,7 @@ export async function listUsers({
     search: normalizedSearch,
     status,
     roleId,
+    currentUserId,
   });
 }
 
