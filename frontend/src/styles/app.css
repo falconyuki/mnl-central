@@ -65,14 +65,10 @@ body {
   }
 }
 
-.users-table-container,
-.websites-table-container,
-.campaigns-table-container {
+.page-table-container {
   overflow: visible;
 }
 
-.users-table-container .dropdown-menu,
-.websites-table-container .dropdown-menu,
-.campaigns-table-container .dropdown-menu {
+.page-table-container .dropdown-menu {
   z-index: 1055;
 }

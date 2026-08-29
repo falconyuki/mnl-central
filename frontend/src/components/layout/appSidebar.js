@@ -39,13 +39,25 @@ export function renderAppSidebar(container) {
           <a
             href="#"
             class="nav-link"
-            data-nav-item="users"
+            data-nav-item="campaigns"
           >
             <i
-              class="bi bi-people me-2"
+              class="bi bi-megaphone me-2"
               aria-hidden="true"
             ></i>
-            Users
+            Campaigns
+          </a>
+
+          <a
+            href="#"
+            class="nav-link"
+            data-nav-item="customers"
+          >
+            <i
+              class="bi bi-person"
+              aria-hidden="true"
+            ></i>
+            Customers
           </a>
 
           <a
@@ -63,13 +75,13 @@ export function renderAppSidebar(container) {
           <a
             href="#"
             class="nav-link"
-            data-nav-item="campaigns"
+            data-nav-item="users"
           >
             <i
-              class="bi bi-megaphone me-2"
+              class="bi bi-person-gear"
               aria-hidden="true"
             ></i>
-            Campaigns
+            Users
           </a>
         </div>
       </nav>

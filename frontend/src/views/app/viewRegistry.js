@@ -4,6 +4,10 @@ import {
   renderCampaignsView,
   initializeCampaignsView,
 } from "./campaignsView.js";
+import {
+  renderCustomersView,
+  initializeCustomersView,
+} from "./customersView.js";
 
 const VIEW_REGISTRY = {
   dashboard: {
@@ -47,6 +51,13 @@ const VIEW_REGISTRY = {
     title: "Campaigns",
     render: renderCampaignsView,
     initialize: initializeCampaignsView,
+  },
+
+  customers: {
+    id: "customers",
+    title: "Customers",
+    render: renderCustomersView,
+    initialize: initializeCustomersView,
   },
 };
 

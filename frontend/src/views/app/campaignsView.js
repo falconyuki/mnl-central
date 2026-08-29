@@ -144,7 +144,7 @@ export function renderCampaignsView() {
 
         <div class="card-body p-0">
 
-          <div class="table-responsive campaigns-table-container">
+          <div class="table-responsive page-table-container">
 
             <table class="table table-hover align-middle mb-0">
 

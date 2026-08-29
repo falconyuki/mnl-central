@@ -139,7 +139,7 @@ export function renderUsersView() {
 
       <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
-          <div class="table-responsive users-table-container">
+          <div class="table-responsive page-table-container">
 
             <table class="table table-hover align-middle mb-0">
 
