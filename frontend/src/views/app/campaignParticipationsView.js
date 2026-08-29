@@ -1506,13 +1506,9 @@ function initializeCallAttempt({
           customerId,
           callStatus,
           remarks: callRemarks || null,
-          discussions: [
-            {
-              campaignParticipationId: participation.id,
-              discussionStatus,
-              remarks: discussionRemarks || null,
-            },
-          ],
+          campaignParticipationId: participation.id,
+          discussionStatus,
+          discussionRemarks: discussionRemarks || null,
         });
       }
 

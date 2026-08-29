@@ -67,7 +67,9 @@ export function createCallAttemptWithDiscussion({
   customerId,
   callStatus,
   remarks,
-  discussions,
+  campaignParticipationId,
+  discussionStatus,
+  discussionRemarks,
 } = {}) {
   return apiRequest("/call-attempts/with-discussion", {
     method: "POST",
@@ -76,7 +78,9 @@ export function createCallAttemptWithDiscussion({
       customerId,
       callStatus,
       remarks,
-      discussions,
+      campaignParticipationId,
+      discussionStatus,
+      discussionRemarks,
     },
   });
 }
