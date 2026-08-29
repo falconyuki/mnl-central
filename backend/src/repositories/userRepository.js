@@ -288,3 +288,17 @@ export async function updateUserPassword({
     [passwordHash, mustChangePassword ? 1 : 0, updatedAt, id],
   );
 }
+
+export async function countActiveAdministrators() {
+  const result = await execute(
+    `
+      SELECT COUNT(*) AS count
+      FROM users u
+      INNER JOIN roles r ON r.id = u.role_id
+      WHERE u.status = 'Active'
+        AND r.name = 'Administrator'
+    `,
+  );
+
+  return Number(result.rows[0].count);
+}

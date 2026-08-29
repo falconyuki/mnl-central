@@ -9,6 +9,7 @@ import {
   updateUserStatus as updateUserStatusRepository,
   updateUserRole as updateUserRoleRepository,
   updateUserPassword as updateUserPasswordRepository,
+  countActiveAdministrators,
 } from "../repositories/userRepository.js";
 import { findRoleById } from "../repositories/roleRepository.js";
 import { AppError } from "../errors/AppError.js";
@@ -95,7 +96,7 @@ export async function updateUser({ id, displayName }) {
   return findUserForManagementById(id);
 }
 
-export async function updateUserStatus({ id, status }) {
+export async function updateUserStatus({ id, status, currentUserId }) {
   const user = await findUserForManagementById(id);
 
   if (!user) {
@@ -106,6 +107,24 @@ export async function updateUserStatus({ id, status }) {
     return user;
   }
 
+  if (user.roleName === "Administrator" && status === "Disabled") {
+    if (id === currentUserId) {
+      throw new AppError(
+        "You cannot disable your own Administrator account.",
+        ERROR_CODES.BUSINESS_RULE_VIOLATION,
+      );
+    }
+
+    const activeAdministratorCount = await countActiveAdministrators();
+
+    if (activeAdministratorCount <= 1) {
+      throw new AppError(
+        "The last active Administrator cannot be disabled.",
+        ERROR_CODES.BUSINESS_RULE_VIOLATION,
+      );
+    }
+  }
+
   const updatedAt = new Date().toISOString();
 
   await updateUserStatusRepository({ id, status, updatedAt });
@@ -113,7 +132,7 @@ export async function updateUserStatus({ id, status }) {
   return findUserForManagementById(id);
 }
 
-export async function updateUserRole({ id, roleId }) {
+export async function updateUserRole({ id, roleId, currentUserId }) {
   const user = await findUserForManagementById(id);
 
   if (!user) {
@@ -128,6 +147,24 @@ export async function updateUserRole({ id, roleId }) {
 
   if (!role) {
     throw new AppError("Role not found.", ERROR_CODES.NOT_FOUND);
+  }
+
+  if (user.roleName === "Administrator" && role.name !== "Administrator") {
+    if (id === currentUserId) {
+      throw new AppError(
+        "You cannot remove your own Administrator role.",
+        ERROR_CODES.BUSINESS_RULE_VIOLATION,
+      );
+    }
+
+    const activeAdministratorCount = await countActiveAdministrators();
+
+    if (activeAdministratorCount <= 1) {
+      throw new AppError(
+        "The last active Administrator cannot lose the Administrator role.",
+        ERROR_CODES.BUSINESS_RULE_VIOLATION,
+      );
+    }
   }
 
   const updatedAt = new Date().toISOString();

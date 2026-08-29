@@ -74,6 +74,7 @@ export async function updateUserStatusController(req, res, next) {
     const user = await updateUserStatus({
       id: req.params.id,
       status: req.body.status,
+      currentUserId: req.auth.userId,
     });
 
     return res.status(200).json({
@@ -89,6 +90,7 @@ export async function updateUserRoleController(req, res, next) {
     const user = await updateUserRole({
       id: req.params.id,
       roleId: req.body.roleId,
+      currentUserId: req.auth.userId,
     });
 
     return res.status(200).json({
