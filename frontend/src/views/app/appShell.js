@@ -78,7 +78,7 @@ function initializeNavigation(container) {
   }
 
   navigationItems.forEach((navigationItem) => {
-    navigationItem.addEventListener("click", (event) => {
+    navigationItem.addEventListener("click", async (event) => {
       event.preventDefault();
 
       const viewId = navigationItem.dataset.navItem;
@@ -89,6 +89,9 @@ function initializeNavigation(container) {
       }
 
       contentContainer.innerHTML = view.render();
+      if (typeof view.initialize === "function") {
+        await view.initialize(container);
+      }
 
       if (pageTitle) {
         pageTitle.textContent = view.title;
