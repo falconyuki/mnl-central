@@ -7,6 +7,10 @@ import {
   createCampaignParticipation,
   updateCampaignParticipationStatus,
 } from "../../services/campaignParticipationService.js";
+import {
+  createCallAttempt,
+  createCallAttemptWithDiscussion,
+} from "../../services/callAttemptService.js";
 
 import { listCampaigns } from "../../services/campaignService.js";
 import { listCustomers } from "../../services/customerService.js";
@@ -22,6 +26,7 @@ const STATUS = {
 const ACTIONS = {
   ACTIVATE: "activate",
   EXPIRE: "expire",
+  CALL_ATTEMPT: "call-attempt",
 };
 
 export function renderCampaignParticipationsView() {
@@ -329,6 +334,282 @@ export function renderCampaignParticipationsView() {
 
       </div>
 
+      <!-- Call Attempt Modal -->
+
+      <div
+        class="modal fade"
+        id="campaign-participation-call-modal"
+        tabindex="-1"
+        aria-labelledby="campaign-participation-call-modal-label"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content">
+            <form id="campaign-participation-call-form">
+              <div class="modal-header">
+                <h2
+                  class="modal-title fs-5"
+                  id="campaign-participation-call-modal-label"
+                >
+                  Call Attempt
+                </h2>
+
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+
+              </div>
+
+              <div class="modal-body">
+
+                <div
+                  id="campaign-participation-call-error"
+                  class="alert alert-danger d-none"
+                  role="alert"
+                ></div>
+
+                <!-- Customer Information -->
+
+                <section class="mb-4">
+
+                  <h3 class="h6 mb-3">
+                    Customer Information
+                  </h3>
+
+                  <div
+                    id="campaign-participation-call-customer"
+                    class="card bg-body-tertiary border-0"
+                  ></div>
+
+                </section>
+
+                <!-- Active Campaigns -->
+
+                <section class="mb-4">
+
+                  <h3 class="h6 mb-3">
+                    Active Campaigns
+                  </h3>
+
+                  <div
+                    id="campaign-participation-call-campaigns"
+                  ></div>
+
+                </section>
+
+                <!-- Call -->
+
+                <section class="mb-4">
+
+                  <h3 class="h6 mb-3">
+                    Call
+                  </h3>
+
+                  <div class="mb-3">
+
+                    <label
+                      for="campaign-participation-call-status"
+                      class="form-label"
+                    >
+                      Call Status
+                    </label>
+
+                    <select
+                      id="campaign-participation-call-status"
+                      name="callStatus"
+                      class="form-select"
+                      required
+                    >
+                      <option value="">
+                        Select call status
+                      </option>
+
+                      <option value="NO_ANSWER">
+                        No Answer
+                      </option>
+
+                      <option value="ANSWERED">
+                        Answered
+                      </option>
+
+                      <option value="DROP_CALL">
+                        Drop Call
+                      </option>
+
+                      <option value="INTERESTED">
+                        Interested
+                      </option>
+
+                      <option value="NOT_INTERESTED">
+                        Not Interested
+                      </option>
+
+                      <option value="CALL_BACK">
+                        Call Back
+                      </option>
+
+                      <option value="WRONG_NUMBER">
+                        Wrong Number
+                      </option>
+
+                      <option value="INVALID_NUMBER">
+                        Invalid Number
+                      </option>
+
+                    </select>
+
+                  </div>
+
+                  <div>
+
+                    <label
+                      for="campaign-participation-call-remarks"
+                      class="form-label"
+                    >
+                      Call Remarks
+                    </label>
+
+                    <textarea
+                      id="campaign-participation-call-remarks"
+                      name="callRemarks"
+                      class="form-control"
+                      rows="3"
+                      maxlength="2000"
+                    ></textarea>
+
+                  </div>
+
+                </section>
+
+                <!-- Discussion -->
+
+                <section>
+
+                  <div
+                    class="d-flex align-items-center justify-content-between mb-3"
+                  >
+
+                    <h3 class="h6 mb-0">
+                      Campaign Discussion
+                    </h3>
+
+                    <div class="form-check">
+
+                      <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="campaign-participation-call-add-discussion"
+                      >
+
+                      <label
+                        class="form-check-label"
+                        for="campaign-participation-call-add-discussion"
+                      >
+                        Record discussion
+                      </label>
+
+                    </div>
+
+                  </div>
+
+                  <div
+                    id="campaign-participation-call-discussion-section"
+                    class="d-none"
+                  >
+
+                    <div class="card bg-body-tertiary border-0">
+
+                      <div class="card-body">
+
+                        <div class="mb-3">
+
+                          <label
+                            for="campaign-participation-call-discussion-status"
+                            class="form-label"
+                          >
+                            Discussion Status
+                          </label>
+
+                          <select
+                            id="campaign-participation-call-discussion-status"
+                            name="discussionStatus"
+                            class="form-select"
+                          >
+                            <option value="">
+                              Select discussion status
+                            </option>
+
+                            <option value="DISCUSSED">
+                              Discussed
+                            </option>
+
+                            <option value="NOT_DISCUSSED">
+                              Not Discussed
+                            </option>
+
+                          </select>
+
+                        </div>
+
+                        <div>
+
+                          <label
+                            for="campaign-participation-call-discussion-remarks"
+                            class="form-label"
+                          >
+                            Discussion Remarks
+                          </label>
+
+                          <textarea
+                            id="campaign-participation-call-discussion-remarks"
+                            name="discussionRemarks"
+                            class="form-control"
+                            rows="3"
+                            maxlength="2000"
+                          ></textarea>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                </section>
+
+              </div>
+
+              <div class="modal-footer">
+
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  id="campaign-participation-call-submit"
+                >
+                  Save Call
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+      </div>
+
       <!-- Status Action Modal -->
 
       <div
@@ -483,6 +764,15 @@ export async function initializeCampaignParticipationsView(container) {
     });
 
     initializeActions({
+      token,
+      state,
+      container,
+      tableBody,
+      paginationContainer,
+      errorContainer,
+    });
+
+    initializeCallAttempt({
       token,
       state,
       container,
@@ -723,6 +1013,24 @@ function renderActions(participation) {
         </button>
 
         <ul class="dropdown-menu dropdown-menu-end">
+          <li>
+            <button
+              type="button"
+              class="dropdown-item"
+              data-participation-action="call-attempt"
+              data-participation-id="${escapeHtml(participation.id)}"
+            >
+              <i
+                class="bi bi-telephone me-2"
+                aria-hidden="true"
+              ></i>
+              Call Attempt
+            </button>
+          </li>
+
+          <li>
+            <hr class="dropdown-divider">
+          </li>
 
           <li>
             <button
@@ -758,7 +1066,6 @@ function renderActions(participation) {
       </button>
 
       <ul class="dropdown-menu dropdown-menu-end">
-
         <li>
           <button
             type="button"
@@ -978,8 +1285,10 @@ function initializeActions({
     }
 
     const participationId = actionButton.dataset.participationId;
-
     const action = actionButton.dataset.participationAction;
+    if (action === ACTIONS.CALL_ATTEMPT) {
+      return;
+    }
 
     const participation = state.participations.find(
       (item) => item.id === participationId,
@@ -1063,6 +1372,372 @@ function initializeActions({
       }
     }
   });
+}
+
+function initializeCallAttempt({
+  token,
+  state,
+  container,
+  tableBody,
+  paginationContainer,
+  errorContainer,
+}) {
+  const addDiscussionCheckbox = container.querySelector(
+    "#campaign-participation-call-add-discussion",
+  );
+
+  const discussionSection = container.querySelector(
+    "#campaign-participation-call-discussion-section",
+  );
+
+  const form = container.querySelector("#campaign-participation-call-form");
+
+  const submitButton = container.querySelector(
+    "#campaign-participation-call-submit",
+  );
+
+  if (!form || !addDiscussionCheckbox || !discussionSection) {
+    return;
+  }
+
+  addDiscussionCheckbox.addEventListener("change", () => {
+    discussionSection.classList.toggle(
+      "d-none",
+      !addDiscussionCheckbox.checked,
+    );
+  });
+
+  tableBody.addEventListener("click", (event) => {
+    const button = event.target.closest(
+      '[data-participation-action="call-attempt"]',
+    );
+
+    if (!button) {
+      return;
+    }
+
+    const participationId = button.dataset.participationId;
+
+    const participation = state.participations.find(
+      (item) => item.id === participationId,
+    );
+
+    if (!participation) {
+      return;
+    }
+
+    state.selectedCallParticipation = participation;
+
+    openCallAttemptModal({
+      container,
+      state,
+      participation,
+    });
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const participation = state.selectedCallParticipation;
+
+    if (!participation) {
+      return;
+    }
+
+    const formData = new FormData(form);
+
+    const customerId = participation.customerId;
+
+    const callStatus = String(formData.get("callStatus") ?? "");
+
+    const callRemarks = String(formData.get("callRemarks") ?? "").trim();
+
+    const hasDiscussion = addDiscussionCheckbox.checked;
+
+    const discussionStatus = String(formData.get("discussionStatus") ?? "");
+
+    const discussionRemarks = String(
+      formData.get("discussionRemarks") ?? "",
+    ).trim();
+
+    const errorContainer = container.querySelector(
+      "#campaign-participation-call-error",
+    );
+
+    errorContainer?.classList.add("d-none");
+
+    if (hasDiscussion && !discussionStatus) {
+      if (errorContainer) {
+        errorContainer.textContent = "Please select a discussion status.";
+
+        errorContainer.classList.remove("d-none");
+      }
+
+      return;
+    }
+
+    submitButton.disabled = true;
+
+    try {
+      if (!hasDiscussion) {
+        await createCallAttempt({
+          token,
+          customerId,
+          callStatus,
+          remarks: callRemarks || null,
+        });
+      } else {
+        await createCallAttemptWithDiscussion({
+          token,
+          customerId,
+          callStatus,
+          remarks: callRemarks || null,
+          discussions: [
+            {
+              campaignParticipationId: participation.id,
+              discussionStatus,
+              remarks: discussionRemarks || null,
+            },
+          ],
+        });
+      }
+
+      form.reset();
+
+      discussionSection.classList.add("d-none");
+
+      Modal.getOrCreateInstance(
+        container.querySelector("#campaign-participation-call-modal"),
+      ).hide();
+
+      state.selectedCallParticipation = null;
+
+      await loadParticipations({
+        token,
+        state,
+        tableBody,
+        paginationContainer,
+        errorContainer,
+      });
+    } catch (error) {
+      if (errorContainer) {
+        errorContainer.textContent =
+          error?.message || "Unable to save the call attempt.";
+
+        errorContainer.classList.remove("d-none");
+      }
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+}
+
+function openCallAttemptModal({ container, state, participation }) {
+  const modalElement = container.querySelector(
+    "#campaign-participation-call-modal",
+  );
+
+  const customerContainer = container.querySelector(
+    "#campaign-participation-call-customer",
+  );
+
+  const campaignsContainer = container.querySelector(
+    "#campaign-participation-call-campaigns",
+  );
+
+  const customer = state.customerMap.get(participation.customerId);
+  const selectedCampaign = state.campaignMap.get(participation.campaignId);
+  const website = selectedCampaign
+    ? state.websiteMap.get(selectedCampaign.websiteId)
+    : null;
+
+  if (!modalElement) {
+    return;
+  }
+
+  renderCallCustomer(customerContainer, customer, website);
+
+  renderCallCampaigns(campaignsContainer, state, participation);
+
+  const discussionCheckbox = container.querySelector(
+    "#campaign-participation-call-add-discussion",
+  );
+
+  const discussionSection = container.querySelector(
+    "#campaign-participation-call-discussion-section",
+  );
+
+  discussionCheckbox.checked = false;
+
+  discussionSection.classList.add("d-none");
+
+  const discussionStatus = container.querySelector(
+    "#campaign-participation-call-discussion-status",
+  );
+
+  const discussionRemarks = container.querySelector(
+    "#campaign-participation-call-discussion-remarks",
+  );
+
+  discussionStatus.value = "";
+  discussionRemarks.value = "";
+
+  const selectedCampaignLabel =
+    selectedCampaign?.name ?? participation.campaignId;
+
+  const discussionHeading = container.querySelector(
+    "#campaign-participation-call-discussion-section",
+  );
+
+  if (discussionHeading) {
+    discussionHeading.dataset.campaignName = selectedCampaignLabel;
+  }
+
+  Modal.getOrCreateInstance(modalElement).show();
+}
+
+function renderCallCustomer(container, customer, website) {
+  if (!container) {
+    return;
+  }
+
+  if (!customer) {
+    container.innerHTML = `
+      <div class="card-body text-body-secondary">
+        Customer information is unavailable.
+      </div>
+    `;
+
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="card-body">
+
+      <div class="row g-3">
+
+        <div class="col-12 col-md-6">
+
+          <div class="small text-body-secondary">
+            Username
+          </div>
+
+          <div class="fw-semibold">
+            ${escapeHtml(customer.username ?? "—")}
+          </div>
+
+        </div>
+
+        <div class="col-12 col-md-6">
+
+          <div class="small text-body-secondary">
+            Name
+          </div>
+
+          <div class="fw-semibold">
+            ${escapeHtml(customer.name ?? "—")}
+          </div>
+
+        </div>
+
+        <div class="col-12 col-md-6">
+
+          <div class="small text-body-secondary">
+            Phone
+          </div>
+
+          <div class="fw-semibold">
+            ${escapeHtml(customer.phone ?? "—")}
+          </div>
+
+        </div>
+
+        <div class="col-12 col-md-6">
+
+          <div class="small text-body-secondary">
+            Website
+          </div>
+
+          <div class="fw-semibold">
+            ${escapeHtml(website?.name ?? "—")}
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+function renderCallCampaigns(container, state, participation) {
+  if (!container) {
+    return;
+  }
+
+  const customerId = participation.customerId;
+
+  const activeCampaigns = state.participations.filter(
+    (item) => item.customerId === customerId && item.status === "Active",
+  );
+
+  if (activeCampaigns.length === 0) {
+    container.innerHTML = `
+      <div class="text-body-secondary">
+        No active campaigns found.
+      </div>
+    `;
+
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="list-group">
+
+      ${activeCampaigns
+        .map((item) => {
+          const campaign = state.campaignMap.get(item.campaignId);
+
+          const isSelected = item.id === participation.id;
+
+          return `
+            <div
+              class="list-group-item ${isSelected ? "border-primary" : ""}"
+            >
+
+              <div class="d-flex justify-content-between align-items-start gap-3">
+
+                <div>
+
+                  <div class="fw-semibold">
+                    ${escapeHtml(campaign?.name ?? item.campaignId)}
+                  </div>
+
+                  ${
+                    isSelected
+                      ? `
+                        <div class="small text-primary">
+                          Current participation
+                        </div>
+                      `
+                      : ""
+                  }
+
+                </div>
+
+                <span class="badge ${getStatusBadgeClass(item.status)}">
+                  ${escapeHtml(item.status)}
+                </span>
+
+              </div>
+
+            </div>
+          `;
+        })
+        .join("")}
+
+    </div>
+  `;
 }
 
 function openActionModal({ container, participation, action }) {
