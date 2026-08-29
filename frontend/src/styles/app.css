@@ -66,11 +66,13 @@ body {
 }
 
 .users-table-container,
-.websites-table-container {
+.websites-table-container,
+.campaigns-table-container {
   overflow: visible;
 }
 
 .users-table-container .dropdown-menu,
-.websites-table-container .dropdown-menu {
+.websites-table-container .dropdown-menu,
+.campaigns-table-container .dropdown-menu {
   z-index: 1055;
 }
