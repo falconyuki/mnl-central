@@ -64,6 +64,79 @@ export function renderUsersView() {
         role="alert"
       ></div>
 
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <form id="users-filter-form">
+            <div class="row g-3 align-items-end">
+              <div class="col-12 col-lg-5">
+                <label for="users-filter-search" class="form-label">
+                  Search
+                </label>
+                <input
+                  type="search"
+                  class="form-control"
+                  id="users-filter-search"
+                  name="search"
+                  placeholder="Username or display name"
+                  autocomplete="off"
+                >
+              </div>
+
+              <div class="col-12 col-md-4 col-lg-3">
+                <label for="users-filter-status" class="form-label">
+                  Status
+                </label>
+                <select
+                  class="form-select"
+                  id="users-filter-status"
+                  name="status"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Disabled">Disabled</option>
+                </select>
+              </div>
+
+              <div class="col-12 col-md-4 col-lg-3">
+                <label for="users-filter-role" class="form-label">
+                  Role
+                </label>
+                <select
+                  class="form-select"
+                  id="users-filter-role"
+                  name="roleId"
+                >
+                  <option value="">All Roles</option>
+                </select>
+              </div>
+
+              <div class="col-12 col-md-4 col-lg-1">
+                <div class="d-flex gap-2">
+                  <button
+                    type="submit"
+                    class="btn btn-primary flex-grow-1"
+                    title="Apply filters"
+                  >
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <span class="d-lg-none ms-2">Filter</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <button
+                type="button"
+                class="btn btn-link btn-sm px-0"
+                id="users-filter-reset"
+              >
+                Reset Filters
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
           <div class="table-responsive users-table-container">
@@ -335,6 +408,11 @@ export async function initializeUsersView(container) {
     roles: [],
     action: null,
     selectedUser: null,
+    filters: {
+      search: "",
+      status: "",
+      roleId: "",
+    },
   };
 
   try {
@@ -347,6 +425,13 @@ export async function initializeUsersView(container) {
     });
 
     initializeCreateUserForm({
+      token,
+      container,
+      state,
+      tableBody,
+    });
+
+    initializeUserFilters({
       token,
       container,
       state,
@@ -376,24 +461,33 @@ export async function initializeUsersView(container) {
 }
 
 async function loadRoles(token, container) {
-  const roleSelect = container.querySelector("#create-user-role");
+  const createRoleSelect = container.querySelector("#create-user-role");
+
+  const filterRoleSelect = container.querySelector("#users-filter-role");
 
   const rolesResponse = await listRoles({ token });
   const roles = rolesResponse?.data ?? [];
 
-  populateRoleSelect(roleSelect, roles);
+  populateRoleSelect(createRoleSelect, roles, "", "Select a role");
+
+  populateRoleSelect(filterRoleSelect, roles, "", "All Roles");
 
   return roles;
 }
 
-function populateRoleSelect(select, roles, selectedRoleId = "") {
+function populateRoleSelect(
+  select,
+  roles,
+  selectedRoleId = "",
+  placeholder = "Select a role",
+) {
   if (!select) {
     return;
   }
 
   select.innerHTML = `
     <option value="">
-      Select a role
+      ${escapeHtml(placeholder)}
     </option>
   `;
 
@@ -408,12 +502,20 @@ function populateRoleSelect(select, roles, selectedRoleId = "") {
   });
 }
 
-async function loadUsers({ token, state, tableBody }) {
+async function loadUsers({ token, state, tableBody, errorContainer }) {
   const response = await listUsers({
     token,
     page: 1,
     pageSize: 20,
+    search: state.filters.search,
+    status: state.filters.status,
+    roleId: state.filters.roleId,
   });
+
+  if (errorContainer) {
+    errorContainer.textContent = "";
+    errorContainer.classList.add("d-none");
+  }
 
   state.users = response?.data?.rows ?? [];
 
@@ -1219,4 +1321,65 @@ function renderActionError(message) {
       ${escapeHtml(message)}
     </div>
   `;
+}
+
+function initializeUserFilters({ token, container, state, tableBody }) {
+  const form = container.querySelector("#users-filter-form");
+  const resetButton = container.querySelector("#users-filter-reset");
+
+  if (!form) {
+    return;
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+
+    state.filters.search = String(formData.get("search") ?? "").trim();
+
+    state.filters.status = String(formData.get("status") ?? "");
+
+    state.filters.roleId = String(formData.get("roleId") ?? "");
+
+    try {
+      await loadUsers({
+        token,
+        state,
+        tableBody,
+      });
+    } catch (error) {
+      const errorContainer = container.querySelector("#users-error");
+
+      if (errorContainer) {
+        errorContainer.textContent = error?.message || "Unable to load users.";
+
+        errorContainer.classList.remove("d-none");
+      }
+    }
+  });
+
+  resetButton?.addEventListener("click", async () => {
+    state.filters.search = "";
+    state.filters.status = "";
+    state.filters.roleId = "";
+
+    form.reset();
+
+    try {
+      await loadUsers({
+        token,
+        state,
+        tableBody,
+      });
+    } catch (error) {
+      const errorContainer = container.querySelector("#users-error");
+
+      if (errorContainer) {
+        errorContainer.textContent = error?.message || "Unable to load users.";
+
+        errorContainer.classList.remove("d-none");
+      }
+    }
+  });
 }
