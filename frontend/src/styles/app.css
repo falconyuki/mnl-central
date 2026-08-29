@@ -64,3 +64,11 @@ body {
     transform: translateX(0);
   }
 }
+
+.users-table-container {
+  overflow: visible;
+}
+
+.users-table-container .dropdown-menu {
+  z-index: 1055;
+}
