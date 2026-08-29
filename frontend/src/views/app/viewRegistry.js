@@ -1,5 +1,6 @@
 import { getAccessToken } from "../../services/authService.js";
-import { listUsers } from "../../services/userService.js";
+import { listUsers, createUser } from "../../services/userService.js";
+import { listRoles } from "../../services/roleService.js";
 
 const VIEW_REGISTRY = {
   dashboard: {
@@ -222,6 +223,9 @@ const VIEW_REGISTRY = {
     async initialize(container) {
       const tableBody = container.querySelector("#users-table-body");
       const errorContainer = container.querySelector("#users-error");
+      const roleSelect = container.querySelector("#create-user-role");
+      const createUserForm = container.querySelector("#create-user-form");
+      const createUserSubmit = container.querySelector("#create-user-submit");
 
       if (!tableBody) {
         return;
@@ -238,6 +242,89 @@ const VIEW_REGISTRY = {
           };
         }
 
+        if (createUserForm) {
+          createUserForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            if (createUserSubmit) {
+              createUserSubmit.disabled = true;
+            }
+
+            if (errorContainer) {
+              errorContainer.classList.add("d-none");
+              errorContainer.textContent = "";
+            }
+
+            try {
+              const formData = new FormData(createUserForm);
+
+              await createUser({
+                token,
+                username: formData.get("username"),
+                displayName: formData.get("displayName"),
+                password: formData.get("password"),
+                roleId: formData.get("roleId"),
+              });
+
+              createUserForm.reset();
+
+              const modalElement =
+                container.querySelector("#create-user-modal");
+
+              if (modalElement) {
+                const closeButton = modalElement.querySelector(
+                  '[data-bs-dismiss="modal"]',
+                );
+
+                if (closeButton) {
+                  closeButton.click();
+                }
+              }
+
+              const response = await listUsers({
+                token,
+                page: 1,
+                pageSize: 20,
+              });
+
+              const users = response?.data?.rows ?? [];
+
+              renderUsers(users, tableBody);
+            } catch (error) {
+              if (errorContainer) {
+                errorContainer.textContent =
+                  error?.message || "Unable to create user.";
+                errorContainer.classList.remove("d-none");
+              }
+            } finally {
+              if (createUserSubmit) {
+                createUserSubmit.disabled = false;
+              }
+            }
+          });
+        }
+
+        const rolesResponse = await listRoles({
+          token,
+        });
+
+        const roles = rolesResponse?.data ?? [];
+
+        if (roleSelect) {
+          roleSelect.innerHTML = `
+            <option value="">Select a role</option>
+          `;
+
+          roles.forEach((role) => {
+            const option = document.createElement("option");
+
+            option.value = role.id;
+            option.textContent = role.name;
+
+            roleSelect.appendChild(option);
+          });
+        }
+
         const response = await listUsers({
           token,
           page: 1,
@@ -245,47 +332,7 @@ const VIEW_REGISTRY = {
         });
 
         const users = response?.data?.rows ?? [];
-
-        if (users.length === 0) {
-          tableBody.innerHTML = `
-            <tr>
-              <td
-                colspan="5"
-                class="text-center text-body-secondary py-5"
-              >
-                No users found.
-              </td>
-            </tr>
-          `;
-
-          return;
-        }
-
-        tableBody.innerHTML = users
-          .map(
-            (user) => `
-              <tr>
-                <td>${escapeHtml(user.username)}</td>
-                <td>${escapeHtml(user.displayName)}</td>
-                <td>${escapeHtml(user.roleName)}</td>
-                <td>
-                  <span class="badge ${getStatusBadgeClass(user.status)}">
-                    ${escapeHtml(user.status)}
-                  </span>
-                </td>
-                <td class="text-end">
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary"
-                    disabled
-                  >
-                    Actions
-                  </button>
-                </td>
-              </tr>
-            `,
-          )
-          .join("");
+        renderUsers(users, tableBody);
       } catch (error) {
         tableBody.innerHTML = `
           <tr>
@@ -375,4 +422,51 @@ function getStatusBadgeClass(status) {
   }
 
   return "text-bg-light";
+}
+
+function renderUsers(users, tableBody) {
+  if (!tableBody) {
+    return;
+  }
+
+  if (users.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td
+          colspan="5"
+          class="text-center text-body-secondary py-5"
+        >
+          No users found.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  tableBody.innerHTML = users
+    .map(
+      (user) => `
+        <tr>
+          <td>${escapeHtml(user.username)}</td>
+          <td>${escapeHtml(user.displayName)}</td>
+          <td>${escapeHtml(user.roleName)}</td>
+          <td>
+            <span class="badge ${getStatusBadgeClass(user.status)}">
+              ${escapeHtml(user.status)}
+            </span>
+          </td>
+          <td class="text-end">
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              disabled
+            >
+              Actions
+            </button>
+          </td>
+        </tr>
+      `,
+    )
+    .join("");
 }
