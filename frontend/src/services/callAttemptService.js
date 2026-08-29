@@ -32,14 +32,14 @@ export function listCallAttempts({
 
   const queryString = params.toString();
 
-  return apiRequest(`/calls${queryString ? `?${queryString}` : ""}`, {
+  return apiRequest(`/call-attempts${queryString ? `?${queryString}` : ""}`, {
     method: "GET",
     token,
   });
 }
 
 export function getCallAttempt({ token, id } = {}) {
-  return apiRequest(`/calls/${encodeURIComponent(id)}`, {
+  return apiRequest(`/call-attempts/${encodeURIComponent(id)}`, {
     method: "GET",
     token,
   });
@@ -51,7 +51,7 @@ export function createCallAttempt({
   callStatus,
   remarks,
 } = {}) {
-  return apiRequest("/calls", {
+  return apiRequest("/call-attempts", {
     method: "POST",
     token,
     body: {
@@ -69,7 +69,7 @@ export function createCallAttemptWithDiscussion({
   remarks,
   discussions,
 } = {}) {
-  return apiRequest("/calls/with-discussion", {
+  return apiRequest("/call-attempts/with-discussion", {
     method: "POST",
     token,
     body: {

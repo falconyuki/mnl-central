@@ -343,9 +343,8 @@ export function renderCampaignParticipationsView() {
         aria-labelledby="campaign-participation-call-modal-label"
         aria-hidden="true"
       >
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-          <div class="modal-content">
-            <form id="campaign-participation-call-form">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <form id="campaign-participation-call-form" class="modal-content">
               <div class="modal-header">
                 <h2
                   class="modal-title fs-5"
@@ -605,7 +604,7 @@ export function renderCampaignParticipationsView() {
 
             </form>
 
-          </div>
+
 
         </div>
       </div>
@@ -696,6 +695,14 @@ export async function initializeCampaignParticipationsView(container) {
 
   if (!tableBody) {
     return;
+  }
+
+  const callModal = container.querySelector(
+    "#campaign-participation-call-modal",
+  );
+
+  if (callModal && callModal.parentElement !== document.body) {
+    document.body.appendChild(callModal);
   }
 
   const token = getAccessToken();
@@ -1382,18 +1389,18 @@ function initializeCallAttempt({
   paginationContainer,
   errorContainer,
 }) {
-  const addDiscussionCheckbox = container.querySelector(
-    "#campaign-participation-call-add-discussion",
+  const addDiscussionCheckbox = document.getElementById(
+    "campaign-participation-call-add-discussion",
   );
 
-  const discussionSection = container.querySelector(
-    "#campaign-participation-call-discussion-section",
+  const discussionSection = document.getElementById(
+    "campaign-participation-call-discussion-section",
   );
 
-  const form = container.querySelector("#campaign-participation-call-form");
+  const form = document.getElementById("campaign-participation-call-form");
 
-  const submitButton = container.querySelector(
-    "#campaign-participation-call-submit",
+  const submitButton = document.getElementById(
+    "campaign-participation-call-submit",
   );
 
   if (!form || !addDiscussionCheckbox || !discussionSection) {
@@ -1405,6 +1412,13 @@ function initializeCallAttempt({
       "d-none",
       !addDiscussionCheckbox.checked,
     );
+    const modalElement = document.getElementById(
+      "campaign-participation-call-modal",
+    );
+
+    if (modalElement) {
+      Modal.getOrCreateInstance(modalElement).handleUpdate();
+    }
   });
 
   tableBody.addEventListener("click", (event) => {
@@ -1460,8 +1474,8 @@ function initializeCallAttempt({
       formData.get("discussionRemarks") ?? "",
     ).trim();
 
-    const errorContainer = container.querySelector(
-      "#campaign-participation-call-error",
+    const errorContainer = document.getElementById(
+      "campaign-participation-call-error",
     );
 
     errorContainer?.classList.add("d-none");
@@ -1507,7 +1521,7 @@ function initializeCallAttempt({
       discussionSection.classList.add("d-none");
 
       Modal.getOrCreateInstance(
-        container.querySelector("#campaign-participation-call-modal"),
+        document.getElementById("campaign-participation-call-modal"),
       ).hide();
 
       state.selectedCallParticipation = null;
@@ -1533,16 +1547,16 @@ function initializeCallAttempt({
 }
 
 function openCallAttemptModal({ container, state, participation }) {
-  const modalElement = container.querySelector(
-    "#campaign-participation-call-modal",
+  const modalElement = document.getElementById(
+    "campaign-participation-call-modal",
   );
 
-  const customerContainer = container.querySelector(
-    "#campaign-participation-call-customer",
+  const customerContainer = document.getElementById(
+    "campaign-participation-call-customer",
   );
 
-  const campaignsContainer = container.querySelector(
-    "#campaign-participation-call-campaigns",
+  const campaignsContainer = document.getElementById(
+    "campaign-participation-call-campaigns",
   );
 
   const customer = state.customerMap.get(participation.customerId);
@@ -1559,24 +1573,24 @@ function openCallAttemptModal({ container, state, participation }) {
 
   renderCallCampaigns(campaignsContainer, state, participation);
 
-  const discussionCheckbox = container.querySelector(
-    "#campaign-participation-call-add-discussion",
+  const discussionCheckbox = document.getElementById(
+    "campaign-participation-call-add-discussion",
   );
 
-  const discussionSection = container.querySelector(
-    "#campaign-participation-call-discussion-section",
+  const discussionSection = document.getElementById(
+    "campaign-participation-call-discussion-section",
   );
 
   discussionCheckbox.checked = false;
-
   discussionSection.classList.add("d-none");
+  Modal.getOrCreateInstance(modalElement).handleUpdate();
 
-  const discussionStatus = container.querySelector(
-    "#campaign-participation-call-discussion-status",
+  const discussionStatus = document.getElementById(
+    "campaign-participation-call-discussion-status",
   );
 
-  const discussionRemarks = container.querySelector(
-    "#campaign-participation-call-discussion-remarks",
+  const discussionRemarks = document.getElementById(
+    "campaign-participation-call-discussion-remarks",
   );
 
   discussionStatus.value = "";
