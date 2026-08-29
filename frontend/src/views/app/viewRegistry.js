@@ -13,6 +13,11 @@ import {
   initializeCampaignParticipationsView,
 } from "./campaignParticipationsView.js";
 
+import {
+  renderCallAttemptsView,
+  initializeCallAttemptsView,
+} from "./callAttemptsView.js";
+
 const VIEW_REGISTRY = {
   dashboard: {
     id: "dashboard",
@@ -69,6 +74,13 @@ const VIEW_REGISTRY = {
     title: "Campaign Participations",
     render: renderCampaignParticipationsView,
     initialize: initializeCampaignParticipationsView,
+  },
+
+  callAttempts: {
+    id: "callAttempts",
+    title: "Call Attempts",
+    render: renderCallAttemptsView,
+    initialize: initializeCallAttemptsView,
   },
 };
 

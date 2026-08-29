@@ -75,6 +75,18 @@ export function renderAppSidebar(container) {
           <a
             href="#"
             class="nav-link"
+            data-nav-item="callAttempts"
+          >
+            <i
+              class="bi bi-clock-history"
+              aria-hidden="true"
+            ></i>
+            Call Logs
+          </a>
+
+          <a
+            href="#"
+            class="nav-link"
             data-nav-item="websites"
           >
             <i

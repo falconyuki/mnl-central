@@ -56,6 +56,7 @@ export async function listCallAttempts({
   const fromClause = `
     FROM call_attempts ca
     INNER JOIN customers c ON c.id = ca.customer_id
+    INNER JOIN users u ON u.id = ca.user_id
     ${whereClause}
   `;
 
@@ -68,7 +69,12 @@ export async function listCallAttempts({
     `SELECT
         ca.id,
         ca.customer_id AS customerId,
+        c.username AS customerUsername,
+        c.name AS customerName,
+        c.phone AS customerPhone,
         ca.user_id AS userId,
+        u.username AS username,
+        u.display_name AS displayName,
         ca.called_at AS calledAt,
         ca.call_status AS callStatus,
         ca.remarks,
