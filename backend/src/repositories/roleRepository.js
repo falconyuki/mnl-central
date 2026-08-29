@@ -18,3 +18,20 @@ export async function findRoleById(id) {
 
   return result.rows[0] ?? null;
 }
+
+export async function listRoles() {
+  const result = await execute(
+    `
+      SELECT
+        id,
+        name,
+        description,
+        created_at AS createdAt,
+        updated_at AS updatedAt
+      FROM roles
+      ORDER BY name ASC
+    `,
+  );
+
+  return result.rows;
+}
