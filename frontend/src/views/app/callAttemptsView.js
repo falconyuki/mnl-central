@@ -1,11 +1,10 @@
+import { Modal } from "bootstrap";
+
 import { listCallAttempts } from "../../services/callAttemptService.js";
-
 import { listCustomers } from "../../services/customerService.js";
-
 import { listUsers } from "../../services/userService.js";
-
 import { getAccessToken } from "../../services/authService.js";
-
+import { listCampaignDiscussions } from "../../services/campaignDiscussionService.js";
 import { escapeHtml, getStatusBadgeClass } from "../../utils/formatUtils.js";
 
 const CALL_STATUSES = [
@@ -187,6 +186,7 @@ export function renderCallAttemptsView() {
                   <th>Call Status</th>
                   <th>Called At</th>
                   <th>Remarks</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
 
@@ -194,7 +194,7 @@ export function renderCallAttemptsView() {
 
                 <tr>
                   <td
-                    colspan="5"
+                    colspan="6"
                     class="text-center text-body-secondary py-5"
                   >
                     Loading call attempts...
@@ -216,6 +216,50 @@ export function renderCallAttemptsView() {
 
       </div>
 
+    </div>
+    <div
+      class="modal fade"
+      id="call-attempt-details-modal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 class="modal-title">
+              Call Attempt Details
+            </h5>
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+
+          <div
+            class="modal-body"
+            id="call-attempt-details-body"
+          >
+            <div class="text-center py-5 text-body-secondary">
+              Loading...
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+
+        </div>
+      </div>
     </div>
   `;
 }
@@ -285,6 +329,12 @@ export async function initializeCallAttemptsView(container) {
     });
 
     initializeCustomerSearch({
+      token,
+      state,
+      container,
+    });
+
+    initializeCallAttemptActions({
       token,
       state,
       container,
@@ -435,7 +485,20 @@ function renderCallAttempts(state, tableBody) {
                 : "—"
             }
           </td>
-
+            <td class="text-nowrap">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                data-call-attempt-action="view"
+                data-call-attempt-id="${escapeHtml(callAttempt.id)}"
+              >
+                <i
+                  class="bi bi-eye me-1"
+                  aria-hidden="true"
+                ></i>
+                View
+              </button>
+            </td>
         </tr>
       `;
     })
@@ -801,4 +864,228 @@ function showError(tableBody, errorContainer, message) {
     errorContainer.textContent = message;
     errorContainer.classList.remove("d-none");
   }
+}
+
+function initializeCallAttemptActions({ token, state, container }) {
+  const modalElement = container.querySelector("#call-attempt-details-modal");
+
+  const modalBody = container.querySelector("#call-attempt-details-body");
+
+  if (!modalElement || !modalBody) {
+    return;
+  }
+
+  const modal = new Modal(modalElement);
+
+  container
+    .querySelector("#call-attempts-table-body")
+    ?.addEventListener("click", async (event) => {
+      const button = event.target.closest('[data-call-attempt-action="view"]');
+
+      if (!button) {
+        return;
+      }
+
+      const callAttemptId = button.dataset.callAttemptId;
+
+      if (!callAttemptId) {
+        return;
+      }
+
+      const callAttempt = state.callAttempts.find(
+        (item) => item.id === callAttemptId,
+      );
+
+      if (!callAttempt) {
+        return;
+      }
+
+      await openCallAttemptDetails({
+        token,
+        callAttempt,
+        modal,
+        modalBody,
+      });
+    });
+}
+
+async function openCallAttemptDetails({
+  token,
+  callAttempt,
+  modal,
+  modalBody,
+}) {
+  modalBody.innerHTML = `
+    <div class="text-center py-5">
+      <div
+        class="spinner-border"
+        role="status"
+        aria-hidden="true"
+      ></div>
+
+      <div class="text-body-secondary mt-2">
+        Loading call attempt details...
+      </div>
+    </div>
+  `;
+
+  modal.show();
+
+  try {
+    const discussionResponse = await listCampaignDiscussions({
+      token,
+      callAttemptId: callAttempt.id,
+      page: 1,
+      pageSize: 100,
+    });
+
+    renderCallAttemptDetails({
+      modalBody,
+      callAttempt,
+      discussions: discussionResponse?.data ?? [],
+    });
+  } catch (error) {
+    modalBody.innerHTML = `
+      <div class="alert alert-danger mb-0">
+        ${escapeHtml(error?.message || "Unable to load call attempt details.")}
+      </div>
+    `;
+  }
+}
+
+function renderCallAttemptDetails({ modalBody, callAttempt, discussions }) {
+  const discussionRows =
+    discussions.length > 0
+      ? discussions
+          .map(
+            (discussion) => `
+              <div class="border rounded p-3 mb-3">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="small text-body-secondary">
+                      Discussion Status
+                    </div>
+                    <div class="fw-semibold">
+                      ${escapeHtml(discussion.discussionStatus ?? "—")}
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="small text-body-secondary">
+                      Campaign Participation
+                    </div>
+                    <div class="fw-semibold">
+                      ${escapeHtml(discussion.campaignParticipationId ?? "—")}
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="small text-body-secondary">
+                      Remarks
+                    </div>
+                    <div>
+                      ${escapeHtml(discussion.remarks ?? "—")}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `,
+          )
+          .join("")
+      : `
+          <div class="text-body-secondary">
+            No campaign discussions recorded for this call.
+          </div>
+        `;
+
+  modalBody.innerHTML = `
+    <div class="mb-4">
+      <h6 class="fw-semibold border-bottom pb-2">
+        Customer Information
+      </h6>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="small text-body-secondary">
+            Username
+          </div>
+          <div>
+            ${escapeHtml(callAttempt.customerUsername ?? "—")}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="small text-body-secondary">
+            Name
+          </div>
+          <div>
+            ${escapeHtml(callAttempt.customerName ?? "—")}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="small text-body-secondary">
+            Phone
+          </div>
+          <div>
+            ${escapeHtml(callAttempt.customerPhone ?? "—")}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <h6 class="fw-semibold border-bottom pb-2">
+        Call Information
+      </h6>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="small text-body-secondary">
+            User
+          </div>
+          <div>
+            ${escapeHtml(
+              callAttempt.displayName || callAttempt.username || "—",
+            )}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="small text-body-secondary">
+            Call Status
+          </div>
+          <div>
+            ${escapeHtml(callAttempt.callStatus ?? "—")}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="small text-body-secondary">
+            Called At
+          </div>
+          <div>
+            ${escapeHtml(formatDate(callAttempt.calledAt))}
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="small text-body-secondary">
+            Remarks
+          </div>
+          <div>
+            ${escapeHtml(callAttempt.remarks ?? "—")}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h6 class="fw-semibold border-bottom pb-2">
+        Campaign Discussions
+      </h6>
+
+      ${discussionRows}
+    </div>
+  `;
 }
