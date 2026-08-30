@@ -51,6 +51,18 @@ export function renderAppSidebar(container) {
           <a
             href="#"
             class="nav-link"
+            data-nav-item="promotions"
+          >
+            <i
+              class="bi bi-gift me-2"
+              aria-hidden="true"
+            ></i>
+            Promotions
+          </a>
+
+          <a
+            href="#"
+            class="nav-link"
             data-nav-item="customers"
           >
             <i

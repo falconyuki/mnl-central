@@ -18,6 +18,11 @@ import {
   initializeCallAttemptsView,
 } from "./callAttemptsView.js";
 
+import {
+  renderPromotionsView,
+  initializePromotionsView,
+} from "./promotionsView.js";
+
 const VIEW_REGISTRY = {
   dashboard: {
     id: "dashboard",
@@ -81,6 +86,13 @@ const VIEW_REGISTRY = {
     title: "Call Attempts",
     render: renderCallAttemptsView,
     initialize: initializeCallAttemptsView,
+  },
+
+  promotions: {
+    id: "promotions",
+    title: "Promotions",
+    render: renderPromotionsView,
+    initialize: initializePromotionsView,
   },
 };
 
