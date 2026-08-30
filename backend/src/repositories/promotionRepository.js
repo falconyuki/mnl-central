@@ -22,13 +22,15 @@ export async function listPromotions({
   const parameters = [];
 
   if (search) {
-    conditions.push(`(name LIKE ? OR description LIKE ?)`);
+    conditions.push(
+      `(promotions.name LIKE ? OR promotions.description LIKE ?)`,
+    );
     const searchPattern = `%${search}%`;
     parameters.push(searchPattern, searchPattern);
   }
 
   if (status) {
-    conditions.push(`status = ?`);
+    conditions.push(`promotions.status = ?`);
     parameters.push(status);
   }
 
