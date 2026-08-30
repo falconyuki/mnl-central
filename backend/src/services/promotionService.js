@@ -37,6 +37,7 @@ export async function listPromotions({
   search = null,
   status = null,
   campaignId = null,
+  websiteIds = null,
 }) {
   const normalizedSearch =
     search === null || search === undefined
@@ -54,6 +55,7 @@ export async function listPromotions({
     search: normalizedSearch || null,
     status,
     campaignId: normalizedCampaignId,
+    websiteIds,
   });
 }
 
