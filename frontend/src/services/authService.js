@@ -2,6 +2,7 @@ import { apiRequest } from "./apiClient.js";
 
 const ACCESS_TOKEN_KEY = "mnlCentral.accessToken";
 const CURRENT_USER_KEY = "mnlCentral.currentUser";
+let authorizationContext = null;
 
 function getStoredValue(key) {
   return localStorage.getItem(key);
@@ -13,6 +14,50 @@ function setStoredValue(key, value) {
 
 function removeStoredValue(key) {
   localStorage.removeItem(key);
+}
+
+function setAuthorizationContext(authorization) {
+  authorizationContext = authorization
+    ? {
+        isAdministrator: Boolean(authorization.isAdministrator),
+        permissions: Array.isArray(authorization.permissions)
+          ? [...authorization.permissions]
+          : [],
+        websites: Array.isArray(authorization.websites)
+          ? [...authorization.websites]
+          : [],
+      }
+    : null;
+}
+
+export function getAuthorizationContext() {
+  return authorizationContext;
+}
+
+export function hasPermission(permission) {
+  if (!permission || !authorizationContext) {
+    return false;
+  }
+
+  if (authorizationContext.isAdministrator) {
+    return true;
+  }
+
+  return authorizationContext.permissions.includes(permission);
+}
+
+export function hasWebsiteAccess(websiteId) {
+  if (!websiteId || !authorizationContext) {
+    return false;
+  }
+
+  if (authorizationContext.isAdministrator) {
+    return true;
+  }
+
+  return authorizationContext.websites.some(
+    (website) => website.id === websiteId,
+  );
 }
 
 export function getAccessToken() {
@@ -62,6 +107,13 @@ export async function login(username, password) {
   setStoredValue(ACCESS_TOKEN_KEY, accessToken);
   setStoredValue(CURRENT_USER_KEY, JSON.stringify(user));
 
+  try {
+    await getAuthenticatedUser();
+  } catch (error) {
+    clearSession();
+    throw error;
+  }
+
   return {
     accessToken,
     user,
@@ -81,8 +133,9 @@ export async function getAuthenticatedUser() {
   });
 
   const user = response?.data?.user;
+  const authorization = response?.data?.authorization;
 
-  if (!user) {
+  if (!user || !authorization) {
     throw {
       status: 500,
       code: "INVALID_AUTH_RESPONSE",
@@ -91,6 +144,7 @@ export async function getAuthenticatedUser() {
     };
   }
 
+  setAuthorizationContext(authorization);
   setStoredValue(CURRENT_USER_KEY, JSON.stringify(user));
 
   return user;
@@ -136,4 +190,5 @@ export async function changePassword(currentPassword, newPassword) {
 export function clearSession() {
   removeStoredValue(ACCESS_TOKEN_KEY);
   removeStoredValue(CURRENT_USER_KEY);
+  setAuthorizationContext(null);
 }

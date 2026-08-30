@@ -1,4 +1,79 @@
+import { hasPermission } from "../../services/authService.js";
+
 export function renderAppSidebar(container) {
+  const navigationItems = [
+    {
+      viewId: "campaigns",
+      permission: "CAMPAIGN_VIEW",
+      icon: "bi-megaphone",
+      label: "Campaigns",
+    },
+    {
+      viewId: "promotions",
+      permission: "PROMOTION_VIEW",
+      icon: "bi-gift",
+      label: "Promotions",
+    },
+    {
+      viewId: "customers",
+      permission: "CUSTOMER_VIEW",
+      icon: "bi-person",
+      label: "Customers",
+    },
+    {
+      viewId: "participations",
+      permission: "PARTICIPATION_VIEW",
+      icon: "bi-person-up",
+      label: "Participations",
+    },
+    {
+      viewId: "callAttempts",
+      permission: "CALL_VIEW",
+      icon: "bi-clock-history",
+      label: "Call Logs",
+    },
+    {
+      viewId: "promotionsLog",
+      permission: "PROMOTION_RECEIPT_VIEW",
+      icon: "bi-gift-fill",
+      label: "Promotion Log",
+    },
+    {
+      viewId: "websites",
+      permission: "WEBSITE_VIEW",
+      icon: "bi-globe2 me-2",
+      label: "Websites",
+    },
+    {
+      viewId: "users",
+      permission: "USER_VIEW",
+      icon: "bi-person-gear",
+      label: "Users",
+    },
+  ];
+
+  const visibleNavigationItems = navigationItems.filter((item) =>
+    hasPermission(item.permission),
+  );
+
+  const navigationMarkup = visibleNavigationItems
+    .map(
+      (item) => `
+        <a
+          href="#"
+          class="nav-link"
+          data-nav-item="${item.viewId}"
+        >
+          <i
+            class="bi ${item.icon}"
+            aria-hidden="true"
+          ></i>
+          ${item.label}
+        </a>
+      `,
+    )
+    .join("");
+
   container.innerHTML = `
     <aside
       class="app-sidebar d-flex flex-column border-end bg-body"
@@ -30,107 +105,13 @@ export function renderAppSidebar(container) {
             data-nav-item="dashboard"
           >
             <i
-              class="bi bi-speedometer2 me-2"
+              class="bi bi-speedometer2"
               aria-hidden="true"
             ></i>
             Dashboard
           </a>
 
-          <a
-            href="#"
-            class="nav-link"
-            data-nav-item="campaigns"
-          >
-            <i
-              class="bi bi-megaphone me-2"
-              aria-hidden="true"
-            ></i>
-            Campaigns
-          </a>
-
-          <a
-            href="#"
-            class="nav-link"
-            data-nav-item="promotions"
-          >
-            <i
-              class="bi bi-gift me-2"
-              aria-hidden="true"
-            ></i>
-            Promotions
-          </a>
-
-          <a
-            href="#"
-            class="nav-link"
-            data-nav-item="customers"
-          >
-            <i
-              class="bi bi-person"
-              aria-hidden="true"
-            ></i>
-            Customers
-          </a>
-
-          <a
-            href="#"
-            class="nav-link"
-            data-nav-item="participations"
-          >
-            <i
-              class="bi bi-person-up"
-              aria-hidden="true"
-            ></i>
-            Participations
-          </a>
-
-          <a
-            href="#"
-            class="nav-link"
-            data-nav-item="callAttempts"
-          >
-            <i
-              class="bi bi-clock-history"
-              aria-hidden="true"
-            ></i>
-            Call Logs
-          </a>
-
-          <a
-            href="#"
-            class="nav-link"
-            data-nav-item="promotionsLog"
-          >
-            <i
-              class="bi bi-gift-fill"
-              aria-hidden="true"
-            ></i>
-            Promotion Log
-          </a>
-
-          <a
-            href="#"
-            class="nav-link"
-            data-nav-item="websites"
-          >
-            <i
-              class="bi bi-globe2 me-2"
-              aria-hidden="true"
-            ></i>
-            Websites
-          </a>
-
-          <a
-            href="#"
-            class="nav-link"
-            data-nav-item="users"
-          >
-            <i
-              class="bi bi-person-gear"
-              aria-hidden="true"
-            ></i>
-            Users
-          </a>
+          ${navigationMarkup}
         </div>
       </nav>
     </aside>

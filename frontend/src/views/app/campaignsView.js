@@ -1,6 +1,10 @@
 import { Modal } from "bootstrap";
 
-import { getAccessToken } from "../../services/authService.js";
+import {
+  getAccessToken,
+  hasPermission,
+  getAuthorizationContext,
+} from "../../services/authService.js";
 
 import {
   listCampaigns,
@@ -42,6 +46,9 @@ export function renderCampaignsView() {
           </p>
         </div>
 
+        ${
+          hasPermission("CAMPAIGN_CREATE")
+            ? `
         <button
           type="button"
           class="btn btn-primary"
@@ -54,7 +61,9 @@ export function renderCampaignsView() {
           ></i>
 
           Create Campaign
-        </button>
+        </button>`
+            : ""
+        }
       </div>
 
       <div
@@ -570,11 +579,20 @@ export async function initializeCampaignsView(container) {
   };
 
   try {
-    await loadWebsites({
-      token,
-      state,
-      container,
-    });
+    const authorization = getAuthorizationContext();
+    if (authorization?.isAdministrator) {
+      await loadWebsites({
+        token,
+        state,
+        container,
+      });
+    } else {
+      state.websites = authorization?.websites ?? [];
+      populateWebsiteSelect(
+        container.querySelector("#create-campaign-website"),
+        state.websites,
+      );
+    }
 
     await loadCampaigns({
       token,
@@ -1177,8 +1195,7 @@ function renderCampaigns(campaigns, websiteMap, tableBody) {
 
   tableBody.innerHTML = campaigns
     .map((campaign) => {
-      const websiteName =
-        websiteMap.get(campaign.websiteId) || campaign.websiteId;
+      const websiteName = campaign.websiteName || campaign.websiteId;
 
       return `
         <tr>
@@ -1218,9 +1235,12 @@ function renderCampaigns(campaigns, websiteMap, tableBody) {
           </td>
 
           <td class="text-end">
-
-            ${renderCampaignActions(campaign)}
-
+            ${
+              hasPermission("CAMPAIGN_UPDATE")
+                ? `
+            ${renderCampaignActions(campaign)} `
+                : "—"
+            }
           </td>
 
         </tr>

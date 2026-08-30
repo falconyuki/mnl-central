@@ -1,9 +1,9 @@
 import {
   authenticate,
-  getAuthenticatedUser,
   changePassword,
 } from "../services/authenticationService.js";
 import { revokeToken } from "../security/tokenRevocationService.js";
+import { buildAuthorizationContext } from "../services/authorizations/authorizationService.js";
 
 export async function login(req, res, next) {
   try {
@@ -39,9 +39,15 @@ export async function login(req, res, next) {
 
 export async function me(req, res, next) {
   try {
+    const authorizationContext = await buildAuthorizationContext(req.user);
     return res.status(200).json({
       data: {
         user: req.user,
+        authorization: {
+          isAdministrator: authorizationContext.isAdministrator,
+          permissions: [...authorizationContext.permissions],
+          websites: authorizationContext.websites,
+        },
       },
     });
   } catch (error) {

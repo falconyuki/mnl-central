@@ -2,8 +2,22 @@ import { execute } from "../database/database.js";
 
 export async function findCampaignById(id) {
   const result = await execute(
-    `SELECT id, website_id AS websiteId, name, description, start_date AS startDate, end_date AS endDate, status, created_by AS createdBy, created_at AS createdAt, updated_at AS updatedAt
-        FROM campaigns WHERE id = ? LIMIT 1`,
+    `SELECT
+       c.id,
+       c.website_id AS websiteId,
+       w.name AS websiteName,
+       c.name,
+       c.description,
+       c.start_date AS startDate,
+       c.end_date AS endDate,
+       c.status,
+       c.created_by AS createdBy,
+       c.created_at AS createdAt,
+       c.updated_at AS updatedAt
+     FROM campaigns c
+     INNER JOIN websites w ON w.id = c.website_id
+     WHERE c.id = ?
+     LIMIT 1`,
     [id],
   );
   return result.rows[0] ?? null;
@@ -21,13 +35,13 @@ export async function listCampaigns({
   const parameters = [];
 
   if (search) {
-    conditions.push(`(name LIKE ? OR description LIKE ?)`);
+    conditions.push(`(c.name LIKE ? OR c.description LIKE ?)`);
     const searchPattern = `%${search}%`;
     parameters.push(searchPattern, searchPattern);
   }
 
   if (status) {
-    conditions.push(`status = ?`);
+    conditions.push(`c.status = ?`);
     parameters.push(status);
   }
 
@@ -39,7 +53,7 @@ export async function listCampaigns({
       };
     }
     const placeholder = websiteIds.map(() => `?`).join(",");
-    conditions.push(`website_id IN (${placeholder})`);
+    conditions.push(`c.website_id IN (${placeholder})`);
     parameters.push(...websiteIds);
   }
 
@@ -47,12 +61,28 @@ export async function listCampaigns({
     conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
   const countResult = await execute(
-    `SELECT COUNT(*) AS total FROM campaigns ${whereClause}`,
+    `SELECT COUNT(*) AS total FROM campaigns c ${whereClause}`,
     parameters,
   );
 
   const result = await execute(
-    `SELECT id, website_id AS websiteId, name, description, start_date AS startDate, end_date AS endDate, status, created_by AS createdBy, created_at AS createdAt, updated_at AS updatedAt FROM campaigns ${whereClause} ORDER BY start_date DESC, name ASC LIMIT ? OFFSET ?`,
+    `SELECT
+       c.id,
+       c.website_id AS websiteId,
+       w.name AS websiteName,
+       c.name,
+       c.description,
+       c.start_date AS startDate,
+       c.end_date AS endDate,
+       c.status,
+       c.created_by AS createdBy,
+       c.created_at AS createdAt,
+       c.updated_at AS updatedAt
+     FROM campaigns c
+     INNER JOIN websites w ON w.id = c.website_id
+     ${whereClause}
+     ORDER BY c.start_date DESC, c.name ASC
+     LIMIT ? OFFSET ?`,
     [...parameters, pageSize, offset],
   );
 
