@@ -2,8 +2,10 @@ import { execute } from "../database/database.js";
 
 export async function findCustomerById(id) {
   const result = await execute(
-    `SELECT id, website_id AS websiteId, username, name, phone, status, created_at AS createdAt, updated_at AS updatedAt
-        FROM customers WHERE id = ? LIMIT 1`,
+    `SELECT c.id, c.website_id AS websiteId, w.name AS websiteName, c.username, c.name, c.phone, c.status, c.created_at AS createdAt, c.updated_at AS updatedAt
+        FROM customers c
+        INNER JOIN websites w ON w.id = c.website_id
+        WHERE c.id = ? LIMIT 1`,
     [id],
   );
   return result.rows[0] ?? null;
@@ -30,13 +32,13 @@ export async function listCustomers({
   const parameters = [];
 
   if (search) {
-    conditions.push(`(username LIKE ? OR name LIKE ? OR phone LIKE ?)`);
+    conditions.push(`(c.username LIKE ? OR c.name LIKE ? OR c.phone LIKE ?)`);
     const searchPattern = `%${search}%`;
     parameters.push(searchPattern, searchPattern, searchPattern);
   }
 
   if (status) {
-    conditions.push(`status = ?`);
+    conditions.push(`c.status = ?`);
     parameters.push(status);
   }
 
@@ -48,7 +50,7 @@ export async function listCustomers({
       };
     }
     const placeholder = websiteIds.map(() => `?`).join(",");
-    conditions.push(`website_id IN (${placeholder})`);
+    conditions.push(`c.website_id IN (${placeholder})`);
     parameters.push(...websiteIds);
   }
 
@@ -56,12 +58,26 @@ export async function listCustomers({
     conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
   const countResult = await execute(
-    `SELECT COUNT(*) AS total FROM customers ${whereClause}`,
+    `SELECT COUNT(*) AS total FROM customers c ${whereClause}`,
     parameters,
   );
 
   const result = await execute(
-    `SELECT id, website_id AS websiteId, username, name, phone, status, created_at AS createdAt, updated_at AS updatedAt FROM customers ${whereClause} ORDER BY name ASC, username ASC LIMIT ? OFFSET ?`,
+    `SELECT
+      c.id,
+      c.website_id AS websiteId,
+      w.name AS websiteName,
+      c.username,
+      c.name,
+      c.phone,
+      c.status,
+      c.created_at AS createdAt,
+      c.updated_at AS updatedAt
+    FROM customers c
+    INNER JOIN websites w ON w.id = c.website_id
+    ${whereClause}
+    ORDER BY c.name ASC, c.username ASC
+    LIMIT ? OFFSET ?`,
     [...parameters, pageSize, offset],
   );
 

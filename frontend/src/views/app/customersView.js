@@ -1,6 +1,10 @@
 import { Modal } from "bootstrap";
 
-import { getAccessToken } from "../../services/authService.js";
+import {
+  getAccessToken,
+  hasPermission,
+  getAuthorizationContext,
+} from "../../services/authService.js";
 
 import {
   listCustomers,
@@ -39,6 +43,9 @@ export function renderCustomersView() {
           </p>
         </div>
 
+        ${
+          hasPermission("CUSTOMER_CREATE")
+            ? `
         <button
           type="button"
           class="btn btn-primary"
@@ -51,7 +58,9 @@ export function renderCustomersView() {
           ></i>
 
           Create Customer
-        </button>
+        </button>`
+            : ""
+        }
       </div>
 
       <div
@@ -466,11 +475,20 @@ export async function initializeCustomersView(container) {
   };
 
   try {
-    await loadWebsites({
-      token,
-      state,
-      container,
-    });
+    const authorization = getAuthorizationContext();
+    if (authorization?.isAdministrator) {
+      await loadWebsites({
+        token,
+        state,
+        container,
+      });
+    } else {
+      state.websites = authorization?.websites ?? [];
+      populateWebsiteSelect(
+        container.querySelector("#create-customer-website"),
+        state.websites,
+      );
+    }
 
     await loadCustomers({
       token,
@@ -1012,10 +1030,7 @@ function renderCustomers(customers, websiteMap, tableBody) {
 
   tableBody.innerHTML = customers
     .map((customer) => {
-      const websiteName =
-        customer.websiteName ||
-        websiteMap.get(customer.websiteId) ||
-        customer.websiteId;
+      const websiteName = customer.websiteName || customer.websiteId;
 
       return `
         <tr>
@@ -1047,9 +1062,12 @@ function renderCustomers(customers, websiteMap, tableBody) {
           </td>
 
           <td class="text-end">
-
-            ${renderCustomerActions(customer)}
-
+            ${
+              hasPermission("CUSTOMER_UPDATE")
+                ? `
+            ${renderCustomerActions(customer)}`
+                : "—"
+            }
           </td>
 
         </tr>
