@@ -78,12 +78,30 @@ export async function listPromotionReceipts({
   );
 
   const result = await execute(
-    `SELECT pr.id, pr.promotion_id AS promotionId, pr.campaign_participation_id AS campaignParticipationId, pr.status, pr.received_at AS receivedAt, pr.staff_user_id AS staffUserId, pr.remarks, pr.created_at AS createdAt, pr.updated_at AS updatedAt
-    FROM promotion_receipts pr
-    INNER JOIN promotions p ON p.id = pr.promotion_id
-    INNER JOIN campaigns c ON c.id = p.campaign_id
-    ${whereClause}
-    ORDER BY pr.created_at DESC, pr.id ASC LIMIT ? OFFSET ?`,
+    `SELECT
+        pr.id,
+        pr.promotion_id AS promotionId,
+        p.name AS promotionName,
+        pr.campaign_participation_id AS campaignParticipationId,
+        cp.customer_id AS customerId,
+        cu.name AS customerName,
+        c.id AS campaignId,
+        c.name AS campaignName,
+        pr.status,
+        pr.received_at AS receivedAt,
+        pr.staff_user_id AS staffUserId,
+        u.display_name AS staffDisplayName,
+        pr.remarks,
+        pr.created_at AS createdAt,
+        pr.updated_at AS updatedAt
+      FROM promotion_receipts pr
+      INNER JOIN promotions p ON p.id = pr.promotion_id
+      INNER JOIN campaigns c ON c.id = p.campaign_id
+      INNER JOIN campaign_participations cp ON cp.id = pr.campaign_participation_id
+      INNER JOIN customers cu ON cu.id = cp.customer_id
+      INNER JOIN users u ON u.id = pr.staff_user_id
+      ${whereClause}
+      ORDER BY pr.created_at DESC, pr.id ASC LIMIT ? OFFSET ?`,
     [...parameters, pageSize, offset],
   );
 
