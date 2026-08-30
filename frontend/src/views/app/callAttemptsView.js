@@ -5,6 +5,8 @@ import { listCustomers } from "../../services/customerService.js";
 import { listUsers } from "../../services/userService.js";
 import { getAccessToken } from "../../services/authService.js";
 import { listCampaignDiscussions } from "../../services/campaignDiscussionService.js";
+import { getCampaignParticipation } from "../../services/campaignParticipationService.js";
+import { listCampaigns } from "../../services/campaignService.js";
 import { escapeHtml, getStatusBadgeClass } from "../../utils/formatUtils.js";
 
 const CALL_STATUSES = [
@@ -939,10 +941,55 @@ async function openCallAttemptDetails({
       pageSize: 100,
     });
 
+    const discussions = discussionResponse?.data ?? [];
+
+    const participationIds = [
+      ...new Set(
+        discussions
+          .map((discussion) => discussion.campaignParticipationId)
+          .filter(Boolean),
+      ),
+    ];
+
+    const participationResults = await Promise.all(
+      participationIds.map(async (participationId) => {
+        const response = await getCampaignParticipation({
+          token,
+          id: participationId,
+        });
+
+        return [participationId, response?.data ?? null];
+      }),
+    );
+
+    const participationMap = new Map(participationResults);
+
+    const campaignIds = [
+      ...new Set(
+        participationResults
+          .map(([, participation]) => participation?.campaignId)
+          .filter(Boolean),
+      ),
+    ];
+
+    const campaignsResponse = await listCampaigns({
+      token,
+      page: 1,
+      pageSize: 100,
+    });
+
+    const campaigns = campaignsResponse?.data ?? [];
+
+    const campaignMap = new Map(
+      campaigns.map((campaign) => [campaign.id, campaign]),
+    );
+
     renderCallAttemptDetails({
       modalBody,
       callAttempt,
-      discussions: discussionResponse?.data ?? [],
+      discussions,
+      participationMap,
+      campaignMap,
     });
   } catch (error) {
     modalBody.innerHTML = `
@@ -953,7 +1000,13 @@ async function openCallAttemptDetails({
   }
 }
 
-function renderCallAttemptDetails({ modalBody, callAttempt, discussions }) {
+function renderCallAttemptDetails({
+  modalBody,
+  callAttempt,
+  discussions,
+  participationMap,
+  campaignMap,
+}) {
   const discussionRows =
     discussions.length > 0
       ? discussions
@@ -972,10 +1025,20 @@ function renderCallAttemptDetails({ modalBody, callAttempt, discussions }) {
 
                   <div class="col-md-6">
                     <div class="small text-body-secondary">
-                      Campaign Participation
+                      Campaign
                     </div>
                     <div class="fw-semibold">
-                      ${escapeHtml(discussion.campaignParticipationId ?? "—")}
+                      ${(() => {
+                        const participation = participationMap.get(
+                          discussion.campaignParticipationId,
+                        );
+
+                        const campaign = participation?.campaignId
+                          ? campaignMap.get(participation.campaignId)
+                          : null;
+
+                        return escapeHtml(campaign?.name ?? "—");
+                      })()}
                     </div>
                   </div>
 
