@@ -75,13 +75,13 @@ export function renderAppSidebar(container) {
           <a
             href="#"
             class="nav-link"
-            data-nav-item="campaignParticipations"
+            data-nav-item="participations"
           >
             <i
               class="bi bi-person-up"
               aria-hidden="true"
             ></i>
-            Campaign Participations
+            Participations
           </a>
 
           <a

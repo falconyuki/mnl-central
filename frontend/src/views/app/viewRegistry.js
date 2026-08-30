@@ -74,9 +74,9 @@ const VIEW_REGISTRY = {
     initialize: initializeCustomersView,
   },
 
-  campaignParticipations: {
-    id: "campaignParticipations",
-    title: "Campaign Participations",
+  participations: {
+    id: "participations",
+    title: "Participations",
     render: renderCampaignParticipationsView,
     initialize: initializeCampaignParticipationsView,
   },

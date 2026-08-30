@@ -11,7 +11,11 @@ import {
   createCallAttempt,
   createCallAttemptWithDiscussion,
 } from "../../services/callAttemptService.js";
-
+import { listPromotions } from "../../services/promotionService.js";
+import {
+  listPromotionReceipts,
+  createPromotionReceipt,
+} from "../../services/promotionReceiptService.js";
 import { listCampaigns } from "../../services/campaignService.js";
 import { listCustomers } from "../../services/customerService.js";
 import { listWebsites } from "../../services/websiteService.js";
@@ -27,6 +31,7 @@ const ACTIONS = {
   ACTIVATE: "activate",
   EXPIRE: "expire",
   CALL_ATTEMPT: "call-attempt",
+  RECORD_PROMOTION_RECEIVED: "record-promotion-received",
 };
 
 export function renderCampaignParticipationsView() {
@@ -37,7 +42,7 @@ export function renderCampaignParticipationsView() {
         class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4"
       >
         <div>
-          <h2 class="h4 mb-1">Campaign Participations</h2>
+          <h2 class="h4 mb-1">Participations</h2>
 
           <p class="text-body-secondary mb-0">
             Manage customer participation in campaigns.
@@ -675,6 +680,148 @@ export function renderCampaignParticipationsView() {
         </div>
 
       </div>
+            <!-- Record Promotion Received Modal -->
+
+      <div
+        class="modal fade"
+        id="campaign-participation-promotion-received-modal"
+        tabindex="-1"
+        aria-labelledby="campaign-participation-promotion-received-modal-label"
+        aria-hidden="true"
+      >
+
+        <div class="modal-dialog modal-dialog-centered">
+
+          <div class="modal-content">
+
+            <form id="campaign-participation-promotion-received-form">
+
+              <div class="modal-header">
+
+                <h2
+                  class="modal-title fs-5"
+                  id="campaign-participation-promotion-received-modal-label"
+                >
+                  Record Promotion Received
+                </h2>
+
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+
+              </div>
+
+              <div class="modal-body">
+
+                <div
+                  id="campaign-participation-promotion-received-error"
+                  class="alert alert-danger d-none"
+                  role="alert"
+                ></div>
+
+                <div class="mb-3">
+
+                  <div class="small text-body-secondary">
+                    Customer
+                  </div>
+
+                  <div
+                    id="campaign-participation-promotion-received-customer"
+                    class="fw-semibold"
+                  >
+                    —
+                  </div>
+
+                </div>
+
+                <div class="mb-3">
+
+                  <div class="small text-body-secondary">
+                    Campaign
+                  </div>
+
+                  <div
+                    id="campaign-participation-promotion-received-campaign"
+                    class="fw-semibold"
+                  >
+                    —
+                  </div>
+
+                </div>
+
+                <div class="mb-3">
+
+                  <label
+                    for="campaign-participation-promotion-received-promotion"
+                    class="form-label"
+                  >
+                    Promotion
+                  </label>
+
+                  <select
+                    class="form-select"
+                    id="campaign-participation-promotion-received-promotion"
+                    name="promotionId"
+                    required
+                  >
+                    <option value="">
+                      Loading promotions...
+                    </option>
+                  </select>
+
+                </div>
+
+                <div class="mb-0">
+
+                  <label
+                    for="campaign-participation-promotion-received-remarks"
+                    class="form-label"
+                  >
+                    Remarks
+                  </label>
+
+                  <textarea
+                    class="form-control"
+                    id="campaign-participation-promotion-received-remarks"
+                    name="remarks"
+                    rows="3"
+                    maxlength="2000"
+                  ></textarea>
+
+                </div>
+
+              </div>
+
+              <div class="modal-footer">
+
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  id="campaign-participation-promotion-received-submit"
+                >
+                  Record Promotion Received
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      </div>
 
     </div>
   `;
@@ -723,6 +870,9 @@ export async function initializeCampaignParticipationsView(container) {
     websiteMap: new Map(),
     selectedParticipation: null,
     action: null,
+    selectedPromotionReceiptParticipation: null,
+    promotionReceiptPromotions: [],
+    promotionReceiptIds: new Set(),
     page: 1,
     pageSize: 20,
     pagination: {
@@ -780,6 +930,15 @@ export async function initializeCampaignParticipationsView(container) {
     });
 
     initializeCallAttempt({
+      token,
+      state,
+      container,
+      tableBody,
+      paginationContainer,
+      errorContainer,
+    });
+
+    initializePromotionReceipt({
       token,
       state,
       container,
@@ -1032,6 +1191,21 @@ function renderActions(participation) {
                 aria-hidden="true"
               ></i>
               Call Attempt
+            </button>
+          </li>
+
+          <li>
+            <button
+              type="button"
+              class="dropdown-item"
+              data-participation-action="${ACTIONS.RECORD_PROMOTION_RECEIVED}"
+              data-participation-id="${escapeHtml(participation.id)}"
+            >
+              <i
+                class="bi bi-gift me-2"
+                aria-hidden="true"
+              ></i>
+              Record Promotion Received
             </button>
           </li>
 
@@ -1293,7 +1467,10 @@ function initializeActions({
 
     const participationId = actionButton.dataset.participationId;
     const action = actionButton.dataset.participationAction;
-    if (action === ACTIONS.CALL_ATTEMPT) {
+    if (
+      action === ACTIONS.CALL_ATTEMPT ||
+      action === ACTIONS.RECORD_PROMOTION_RECEIVED
+    ) {
       return;
     }
 
@@ -1376,6 +1553,173 @@ function initializeActions({
     } finally {
       if (submitButton) {
         submitButton.disabled = false;
+      }
+    }
+  });
+}
+
+function initializePromotionReceipt({
+  token,
+  state,
+  container,
+  tableBody,
+  paginationContainer,
+  errorContainer,
+}) {
+  const modalElement = container.querySelector(
+    "#campaign-participation-promotion-received-modal",
+  );
+
+  const form = container.querySelector(
+    "#campaign-participation-promotion-received-form",
+  );
+
+  const promotionSelect = container.querySelector(
+    "#campaign-participation-promotion-received-promotion",
+  );
+
+  if (!modalElement || !form || !promotionSelect) {
+    return;
+  }
+
+  const modal = Modal.getOrCreateInstance(modalElement);
+
+  tableBody.addEventListener("click", async (event) => {
+    const button = event.target.closest(
+      `[data-participation-action="${ACTIONS.RECORD_PROMOTION_RECEIVED}"]`,
+    );
+
+    if (!button) {
+      return;
+    }
+
+    const participationId = button.dataset.participationId;
+
+    const participation = state.participations.find(
+      (item) => item.id === participationId,
+    );
+
+    if (!participation) {
+      showError(
+        tableBody,
+        errorContainer,
+        "The selected participation could not be found.",
+      );
+
+      return;
+    }
+
+    state.selectedPromotionReceiptParticipation = participation;
+
+    openPromotionReceiptModal({
+      token,
+      state,
+      container,
+      participation,
+    });
+  });
+
+  modalElement.addEventListener("hidden.bs.modal", () => {
+    state.selectedPromotionReceiptParticipation = null;
+    state.promotionReceiptPromotions = [];
+    state.promotionReceiptIds = new Set();
+
+    form.reset();
+
+    promotionSelect.innerHTML = `
+      <option value="">
+        Select promotion
+      </option>
+    `;
+
+    const error = container.querySelector(
+      "#campaign-participation-promotion-received-error",
+    );
+
+    error?.classList.add("d-none");
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const participation = state.selectedPromotionReceiptParticipation;
+
+    if (!participation) {
+      return;
+    }
+
+    const submitButton = container.querySelector(
+      "#campaign-participation-promotion-received-submit",
+    );
+
+    const errorContainer = container.querySelector(
+      "#campaign-participation-promotion-received-error",
+    );
+
+    const formData = new FormData(form);
+
+    const promotionId = String(formData.get("promotionId") ?? "");
+
+    const remarks = String(formData.get("remarks") ?? "").trim();
+
+    if (!promotionId) {
+      showPromotionReceiptError(errorContainer, "Please select a promotion.");
+
+      return;
+    }
+
+    if (state.promotionReceiptIds.has(promotionId)) {
+      showPromotionReceiptError(
+        errorContainer,
+        "This promotion has already been recorded as received.",
+      );
+
+      return;
+    }
+
+    if (submitButton) {
+      submitButton.disabled = true;
+
+      submitButton.innerHTML = `
+        <span
+          class="spinner-border spinner-border-sm me-2"
+          aria-hidden="true"
+        ></span>
+        Saving...
+      `;
+    }
+
+    errorContainer?.classList.add("d-none");
+
+    try {
+      await createPromotionReceipt({
+        token,
+        promotionId,
+        campaignParticipationId: participation.id,
+        remarks: remarks || null,
+      });
+
+      modal.hide();
+
+      state.page = 1;
+
+      await refreshParticipations({
+        token,
+        state,
+        tableBody,
+        paginationContainer,
+        errorContainer,
+      });
+    } catch (error) {
+      showPromotionReceiptError(
+        errorContainer,
+        error?.message || "Unable to record promotion received.",
+      );
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+
+        submitButton.innerHTML = "Record Promotion Received";
       }
     }
   });
@@ -1604,6 +1948,141 @@ function openCallAttemptModal({ container, state, participation }) {
   }
 
   Modal.getOrCreateInstance(modalElement).show();
+}
+
+async function openPromotionReceiptModal({
+  token,
+  state,
+  container,
+  participation,
+}) {
+  const modalElement = container.querySelector(
+    "#campaign-participation-promotion-received-modal",
+  );
+
+  const customerContainer = container.querySelector(
+    "#campaign-participation-promotion-received-customer",
+  );
+
+  const campaignContainer = container.querySelector(
+    "#campaign-participation-promotion-received-campaign",
+  );
+
+  const promotionSelect = container.querySelector(
+    "#campaign-participation-promotion-received-promotion",
+  );
+
+  const errorContainer = container.querySelector(
+    "#campaign-participation-promotion-received-error",
+  );
+
+  if (
+    !modalElement ||
+    !customerContainer ||
+    !campaignContainer ||
+    !promotionSelect
+  ) {
+    return;
+  }
+
+  const customer = state.customerMap.get(participation.customerId);
+
+  const campaign = state.campaignMap.get(participation.campaignId);
+
+  customerContainer.textContent = customer?.username
+    ? customer.name
+      ? `${customer.username} — ${customer.name}`
+      : customer.username
+    : participation.customerId;
+
+  campaignContainer.textContent = campaign?.name ?? participation.campaignId;
+
+  errorContainer?.classList.add("d-none");
+
+  promotionSelect.disabled = true;
+
+  promotionSelect.innerHTML = `
+    <option value="">
+      Loading promotions...
+    </option>
+  `;
+
+  Modal.getOrCreateInstance(modalElement).show();
+
+  try {
+    const [promotionsResponse, receiptsResponse] = await Promise.all([
+      listPromotions({
+        token,
+        page: 1,
+        pageSize: 100,
+        campaignId: participation.campaignId,
+      }),
+
+      listPromotionReceipts({
+        token,
+        page: 1,
+        pageSize: 100,
+        campaignParticipationId: participation.id,
+      }),
+    ]);
+
+    const promotions = promotionsResponse?.data ?? [];
+
+    const receipts = receiptsResponse?.data ?? [];
+
+    state.promotionReceiptPromotions = promotions;
+
+    state.promotionReceiptIds = new Set(
+      receipts.map((receipt) => receipt.promotionId),
+    );
+
+    const availablePromotions = promotions.filter(
+      (promotion) => !state.promotionReceiptIds.has(promotion.id),
+    );
+
+    if (availablePromotions.length === 0) {
+      promotionSelect.innerHTML = `
+        <option value="">
+          No unreceived promotions available
+        </option>
+      `;
+
+      promotionSelect.disabled = true;
+
+      return;
+    }
+
+    promotionSelect.innerHTML = `
+      <option value="">
+        Select promotion
+      </option>
+
+      ${availablePromotions
+        .map(
+          (promotion) => `
+            <option value="${escapeHtml(promotion.id)}">
+              ${escapeHtml(promotion.name)}
+            </option>
+          `,
+        )
+        .join("")}
+    `;
+
+    promotionSelect.disabled = false;
+  } catch (error) {
+    promotionSelect.innerHTML = `
+      <option value="">
+        Unable to load promotions
+      </option>
+    `;
+
+    promotionSelect.disabled = true;
+
+    showPromotionReceiptError(
+      errorContainer,
+      error?.message || "Unable to load promotions.",
+    );
+  }
 }
 
 function renderCallCustomer(container, customer, website) {
@@ -1957,4 +2436,13 @@ function showError(tableBody, errorContainer, message) {
     errorContainer.textContent = message;
     errorContainer.classList.remove("d-none");
   }
+}
+
+function showPromotionReceiptError(container, message) {
+  if (!container) {
+    return;
+  }
+
+  container.textContent = message;
+  container.classList.remove("d-none");
 }
