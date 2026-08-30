@@ -1,6 +1,6 @@
 import { Modal } from "bootstrap";
 
-import { getAccessToken } from "../../services/authService.js";
+import { getAccessToken, hasPermission } from "../../services/authService.js";
 
 import {
   listPromotions,
@@ -42,6 +42,9 @@ export function renderPromotionsView() {
           </p>
         </div>
 
+        ${
+          hasPermission("PROMOTION_CREATE")
+            ? `
         <button
           type="button"
           class="btn btn-primary"
@@ -53,8 +56,9 @@ export function renderPromotionsView() {
             aria-hidden="true"
           ></i>
           Create Promotion
-        </button>
-
+        </button>`
+            : ""
+        }
       </div>
 
       <div
@@ -765,8 +769,12 @@ function renderPromotions(promotions, campaigns, tableBody) {
           </td>
 
           <td class="text-end">
-
-            ${renderPromotionActions(promotion)}
+            ${
+              hasPermission("PROMOTION_UPDATE")
+                ? `
+            ${renderPromotionActions(promotion)}`
+                : "—"
+            }
 
           </td>
 
