@@ -1,5 +1,6 @@
 import {
   getCampaignParticipationAuthorization,
+  authorizeCampaignParticipationList,
   authorizeCampaignParticipationView,
   authorizeCampaignParticipationCreate,
   authorizeCampaignParticipationStatusUpdate,
@@ -20,7 +21,7 @@ export async function getCampaignParticipations(req, res, next) {
     const authorizationContext = await getCampaignParticipationAuthorization(
       req.user,
     );
-
+    authorizeCampaignParticipationList(authorizationContext);
     const websiteIds =
       getAuthorizedCampaignParticipationWebsiteIds(authorizationContext);
 

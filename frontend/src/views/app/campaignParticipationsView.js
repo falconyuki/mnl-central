@@ -1,6 +1,6 @@
 import { Modal } from "bootstrap";
 
-import { getAccessToken } from "../../services/authService.js";
+import { getAccessToken, hasPermission } from "../../services/authService.js";
 
 import {
   listCampaignParticipations,
@@ -18,7 +18,6 @@ import {
 } from "../../services/promotionReceiptService.js";
 import { listCampaigns } from "../../services/campaignService.js";
 import { listCustomers } from "../../services/customerService.js";
-import { listWebsites } from "../../services/websiteService.js";
 
 import { escapeHtml, getStatusBadgeClass } from "../../utils/formatUtils.js";
 
@@ -49,6 +48,9 @@ export function renderCampaignParticipationsView() {
           </p>
         </div>
 
+        ${
+          hasPermission("PARTICIPATION_CREATE")
+            ? `
         <button
           type="button"
           class="btn btn-primary"
@@ -61,7 +63,9 @@ export function renderCampaignParticipationsView() {
           ></i>
 
           Create Participation
-        </button>
+        </button>`
+            : ""
+        }
       </div>
 
       <div
@@ -969,12 +973,6 @@ async function loadSupportingData({ token, state, container }) {
         page: 1,
         pageSize: 100,
       }),
-
-      listWebsites({
-        token,
-        page: 1,
-        pageSize: 100,
-      }),
     ]);
 
   state.campaigns = campaignsResponse?.data ?? [];
@@ -1168,7 +1166,6 @@ function renderActions(participation) {
   if (participation.status === STATUS.ACTIVE) {
     return `
       <div class="dropdown">
-
         <button
           type="button"
           class="btn btn-sm btn-outline-secondary dropdown-toggle"
@@ -1179,6 +1176,9 @@ function renderActions(participation) {
         </button>
 
         <ul class="dropdown-menu dropdown-menu-end">
+        ${
+          hasPermission("CALL_CREATE")
+            ? `
           <li>
             <button
               type="button"
@@ -1192,8 +1192,13 @@ function renderActions(participation) {
               ></i>
               Call Attempt
             </button>
-          </li>
+          </li>`
+            : ""
+        }
 
+          ${
+            hasPermission("PROMOTION_RECEIPT_CREATE")
+              ? `
           <li>
             <button
               type="button"
@@ -1207,12 +1212,13 @@ function renderActions(participation) {
               ></i>
               Record Promotion Received
             </button>
-          </li>
+          </li>`
+              : ""
+          }
 
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
+          ${
+            hasPermission("PARTICIPATION_STATUS_UPDATE")
+              ? `
           <li>
             <button
               type="button"
@@ -1226,7 +1232,9 @@ function renderActions(participation) {
               ></i>
               Expire Participation
             </button>
-          </li>
+          </li>`
+              : ""
+          }
 
         </ul>
 
@@ -1234,7 +1242,9 @@ function renderActions(participation) {
     `;
   }
 
-  return `
+  return `${
+    hasPermission("PARTICIPATION_STATUS_UPDATE")
+      ? `
     <div class="dropdown">
 
       <button
@@ -1265,7 +1275,9 @@ function renderActions(participation) {
       </ul>
 
     </div>
-  `;
+  `
+      : "-"
+  }`;
 }
 
 function initializeFilters({

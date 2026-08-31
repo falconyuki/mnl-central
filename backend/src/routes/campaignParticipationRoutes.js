@@ -19,14 +19,12 @@ const router = Router();
 router.get(
   "/",
   requireAuthentication,
-  requirePermission("PARTICIPATION_VIEW"),
   validateListCampaignParticipationsRequest,
   getCampaignParticipations,
 );
 router.get(
   "/:id",
   requireAuthentication,
-  requirePermission("PARTICIPATION_VIEW"),
   validateCampaignParticipationIdParam,
   getCampaignParticipation,
 );

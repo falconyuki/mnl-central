@@ -1,5 +1,6 @@
 import {
   buildAuthorizationContext,
+  hasPermission,
   hasWebsiteAccess,
   authorizeOrThrow,
 } from "./authorizationService.js";
@@ -12,11 +13,18 @@ export function authorizeCampaignParticipationView(
   authorizationContext,
   websiteId,
 ) {
-  return authorizeOrThrow(
-    authorizationContext,
-    "PARTICIPATION_VIEW",
-    websiteId,
-  );
+  const permission =
+    getCampaignParticipationReadPermission(authorizationContext);
+
+  if (!permission) {
+    return authorizeOrThrow(
+      authorizationContext,
+      "PARTICIPATION_VIEW",
+      websiteId,
+    );
+  }
+
+  return authorizeOrThrow(authorizationContext, permission, websiteId);
 }
 
 export function authorizeCampaignParticipationCreate(
@@ -58,4 +66,27 @@ export function canAccessCampaignParticipationWebsite(
   websiteId,
 ) {
   return hasWebsiteAccess(authorizationContext, websiteId);
+}
+
+function getCampaignParticipationReadPermission(authorizationContext) {
+  if (hasPermission(authorizationContext, "PARTICIPATION_VIEW")) {
+    return "PARTICIPATION_VIEW";
+  }
+
+  if (hasPermission(authorizationContext, "CALL_VIEW")) {
+    return "CALL_VIEW";
+  }
+
+  return null;
+}
+
+export function authorizeCampaignParticipationList(authorizationContext) {
+  const permission =
+    getCampaignParticipationReadPermission(authorizationContext);
+
+  if (!permission) {
+    return authorizeOrThrow(authorizationContext, "PARTICIPATION_VIEW");
+  }
+
+  return authorizeOrThrow(authorizationContext, permission);
 }

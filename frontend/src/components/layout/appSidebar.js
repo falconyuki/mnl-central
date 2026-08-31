@@ -22,7 +22,7 @@ export function renderAppSidebar(container) {
     },
     {
       viewId: "participations",
-      permission: "PARTICIPATION_VIEW",
+      permissions: ["PARTICIPATION_VIEW", "CALL_VIEW"],
       icon: "bi-person-up",
       label: "Participations",
     },
@@ -53,7 +53,7 @@ export function renderAppSidebar(container) {
   ];
 
   const visibleNavigationItems = navigationItems.filter((item) =>
-    hasPermission(item.permission),
+    canAccessNavItem(item),
   );
 
   const navigationMarkup = visibleNavigationItems
@@ -116,4 +116,12 @@ export function renderAppSidebar(container) {
       </nav>
     </aside>
   `;
+}
+
+function canAccessNavItem(item) {
+  if (Array.isArray(item.permissions)) {
+    return item.permissions.some((permission) => hasPermission(permission));
+  }
+
+  return item.permission ? hasPermission(item.permission) : true;
 }
