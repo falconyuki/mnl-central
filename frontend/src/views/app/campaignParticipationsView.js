@@ -1163,7 +1163,13 @@ function renderParticipations(state, tableBody) {
 }
 
 function renderActions(participation) {
+  const canCall = hasPermission("CALL_CREATE");
+  const canRecordPromotion = hasPermission("PROMOTION_RECEIPT_CREATE");
+  const canUpdateStatus = hasPermission("PARTICIPATION_STATUS_UPDATE");
   if (participation.status === STATUS.ACTIVE) {
+    if (!canCall && !canRecordPromotion && !canUpdateStatus) {
+      return "-";
+    }
     return `
       <div class="dropdown">
         <button
